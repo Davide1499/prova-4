@@ -34,9 +34,33 @@
 
 <script>
 const camionData = {
-    "Tendina Anteriore": ["Estintore", "Torcia", "Guanti"],
-    "Tendina Laterale": ["Corda", "Martello", "Ascia"],
-    "Tendina Posteriore": ["Pompa", "Tubo", "Rubinetto"]
+    "Anteriore Sinistro": ["Motosega Echo","Mototroncatore Echo","Estintore a polvere Kg 6","Estintore CO2 Kg 5",
+        "Seghetto","Tanica Metallo","2 Cuscini di sollevamento","Badile","Cesoia x Metallo",
+        "2 Calzatoie","Olio Miscela","Olio Catena","Cavo x il Tifor","Airbag Shield","Seghetto per vetro","Mazza"
+    ],
+    "Cabina": ["Autoradio","Paletta Segnaletica","Nastro Segnaletico","Confezione guanti lattice","Fanalino Portatile",
+        "Cerca fughe","Rilevatore multigas","Massa grassa x fuga gas","Chiave per ascensore","Tifor con leva",
+        "2 Tute calabroni","Spray x calabroni","Segaccio","Piccone","Ascia grande","Cassetta attrezzi"
+    ],
+    "Anteriore Destro": ["Pompa sommersa","Gruppo elettrogeno","4 Tubi aspirazione","3 Piedi","2 Fanalino portatile",
+        "Cesoia dielettrica","Guanti dielettrici","Messa a terra con cavo","Valvola di fondo"
+    ],
+    "Centrale Sinistro": ["3 Birilli segnaletici","Braga da 2 T","5 Maniglioni","4 Bombole","6 Manichette UNI 70",
+        "Disco x flex","Coppia di catene","Giratubi"
+    ],
+    "Centrale Destro": ["3 Manichette alta pressione","7 Manichette UNI 45","Faro + prese elettriche","Prolunga elettrica",
+        "Trapano","12 Chiavi fisse 6-22 mm","Molettina","2 Dischi x molettina","7 Giraviti italiani","5 Giraviti a croce",
+        "Dischi x flex","Cavetti x batteria","Pinza a pappagallo","Pinza","Tenaglia","Mazzetta","Martello"
+    ],
+    "Posteriore Sinistro": ["2 Scappelli","Divaricatore","Cesoia","Puntello idraulico","Centralina barellabile","Motoventilatore"
+    ],
+    "Posteriore Destro": ["Premiscelatore di linea","Divisore 70/45","Doppia femmina 70","Doppio maschio 70","Doppia femmina 45",
+        "Doppio maschio 45","Riduttore 70/45","Diffusore 70/70","Chiave stringi tubi","Lancia americana da 45",
+        "2 Lance da 70","2 Lance da 45","Tanica di schiumogeno","2 Tubi pesca schiumogeno"
+    ],
+    "Tetto": ["Lancia x schiuma bassa esp.","Scala italiana","Scala a ganci","Mezzo marinaio","Forcone","Fioretto dielettrico",
+        "3 Autoprotettori","Bombola","3 Maschere x autoprotettore"
+    ]
 };
 
 function createCamion() {
@@ -61,7 +85,7 @@ function createCamion() {
         camionData[compartimento].forEach(item => {
             const itemDiv = document.createElement("div");
             itemDiv.className = "checklist-item";
-            itemDiv.id = `row_${compartimento}_${item}`;
+            itemDiv.id = row_${compartimento}_${item};
 
             const label = document.createElement("span");
             label.textContent = item;
@@ -71,7 +95,7 @@ function createCamion() {
 
             const pres = document.createElement("input");
             pres.type = "checkbox";
-            pres.id = `pres_${compartimento}_${item}`;
+            pres.id = pres_${compartimento}_${item};
             pres.onchange = () => toggleStatus(compartimento, item, "presente");
 
             const presLabel = document.createElement("label");
@@ -80,7 +104,7 @@ function createCamion() {
 
             const ass = document.createElement("input");
             ass.type = "checkbox";
-            ass.id = `ass_${compartimento}_${item}`;
+            ass.id = ass_${compartimento}_${item};
             ass.onchange = () => toggleStatus(compartimento, item, "assente");
 
             const assLabel = document.createElement("label");
@@ -102,7 +126,6 @@ function createCamion() {
         camionDiv.appendChild(div);
     }
 
-    // Pulsanti salva, reset ed esporta
     const btnContainer = document.createElement("div");
     btnContainer.style.marginTop = "10px";
 
@@ -130,61 +153,37 @@ function createCamion() {
 }
 
 function toggleStatus(compartimento, item, status) {
-    const row = document.getElementById(`row_${compartimento}_${item}`);
-    const pres = document.getElementById(`pres_${compartimento}_${item}`);
-    const ass = document.getElementById(`ass_${compartimento}_${item}`);
+    const row = document.getElementById(row_${compartimento}_${item});
+    const pres = document.getElementById(pres_${compartimento}_${item});
+    const ass = document.getElementById(ass_${compartimento}_${item});
 
-    if (status === "presente") {
-        pres.checked = true;
-        ass.checked = false;
-    } else if (status === "assente") {
-        pres.checked = false;
-        ass.checked = true;
-    } else if (status === "none") {
-        pres.checked = false;
-        ass.checked = false;
-    }
+    if (status === "presente") { pres.checked = true; ass.checked = false; }
+    else if (status === "assente") { pres.checked = false; ass.checked = true; }
+    else { pres.checked = false; ass.checked = false; }
 
-    if (pres.checked) {
-        row.classList.add("presente");
-        row.classList.remove("assente");
-    } else if (ass.checked) {
-        row.classList.add("assente");
-        row.classList.remove("presente");
-    } else {
-        row.classList.remove("presente");
-        row.classList.remove("assente");
-    }
+    row.classList.toggle("presente", pres.checked);
+    row.classList.toggle("assente", ass.checked);
 }
 
 function saveChecklist() {
     const now = new Date();
-    const defaultName = now.getFullYear() + "-" +
-                        String(now.getMonth()+1).padStart(2,"0") + "-" +
-                        String(now.getDate()).padStart(2,"0") + " " +
-                        String(now.getHours()).padStart(2,"0") + "-" +
-                        String(now.getMinutes()).padStart(2,"0") + "-" +
-                        String(now.getSeconds()).padStart(2,"0");
-
+    const defaultName = now.toISOString().replace("T"," ").split(".")[0].replace(/:/g,"-");
     const name = prompt("Nome della checklist:", defaultName);
     if (!name) return;
-
-    if (localStorage.getItem(`checklist_${name}`)) {
-        const overwrite = confirm("Esiste già una checklist con questo nome. Sovrascrivere?");
-        if (!overwrite) return;
+    if (localStorage.getItem(checklist_${name})) {
+        if (!confirm("Esiste già una checklist con questo nome. Sovrascrivere?")) return;
     }
 
     const checklist = {};
     for (const compartimento in camionData) {
         checklist[compartimento] = {};
         camionData[compartimento].forEach(item => {
-            const pres = document.getElementById(`pres_${compartimento}_${item}`).checked;
-            const ass = document.getElementById(`ass_${compartimento}_${item}`).checked;
+            const pres = document.getElementById(pres_${compartimento}_${item}).checked;
+            const ass = document.getElementById(ass_${compartimento}_${item}).checked;
             checklist[compartimento][item] = pres ? "presente" : ass ? "assente" : "none";
         });
     }
-
-    localStorage.setItem(`checklist_${name}`, JSON.stringify(checklist));
+    localStorage.setItem(checklist_${name}, JSON.stringify(checklist));
     alert("Checklist salvata!");
     loadSavedLists();
 }
@@ -194,7 +193,7 @@ function loadChecklist() {
     const name = select.value;
     if (!name) return;
 
-    const checklist = JSON.parse(localStorage.getItem(`checklist_${name}`));
+    const checklist = JSON.parse(localStorage.getItem(checklist_${name}));
     for (const compartimento in checklist) {
         for (const item in checklist[compartimento]) {
             toggleStatus(compartimento, item, checklist[compartimento][item]);
@@ -206,18 +205,15 @@ function deleteChecklist() {
     const select = document.getElementById("savedLists");
     const name = select.value;
     if (!name) return;
-    localStorage.removeItem(`checklist_${name}`);
+    localStorage.removeItem(checklist_${name});
     alert("Checklist eliminata!");
     loadSavedLists();
 }
 
 function resetChecklist() {
-    if (confirm("Sei sicuro di voler resettare tutte le checkbox?")) {
-        for (const compartimento in camionData) {
-            camionData[compartimento].forEach(item => {
-                toggleStatus(compartimento, item, "none");
-            });
-        }
+    if (!confirm("Sei sicuro di voler resettare tutte le checkbox?")) return;
+    for (const compartimento in camionData) {
+        camionData[compartimento].forEach(item => toggleStatus(compartimento, item, "none"));
     }
 }
 
@@ -235,44 +231,31 @@ function loadSavedLists() {
     }
 }
 
-// 🔹 Funzione per esportare in PDF
 function exportChecklist() {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
-
     doc.setFontSize(18);
     doc.text("Checklist Camion Vigili del Fuoco", 10, 15);
     doc.setFontSize(12);
 
     let y = 30;
-
     for (const compartimento in camionData) {
         doc.setFont("helvetica", "bold");
         doc.text(compartimento, 10, y);
         y += 7;
 
         camionData[compartimento].forEach(item => {
-            const pres = document.getElementById(`pres_${compartimento}_${item}`).checked;
-            const ass = document.getElementById(`ass_${compartimento}_${item}`).checked;
-
-            let stato = "Non verificato";
-            if (pres) stato = "✔ Presente";
-            if (ass) stato = "✘ Assente";
-
+            const pres = document.getElementById(pres_${compartimento}_${item}).checked;
+            const ass = document.getElementById(ass_${compartimento}_${item}).checked;
+            let stato = pres ? "✔ Presente" : ass ? "✘ Assente" : "Non verificato";
             doc.setFont("helvetica", "normal");
-            doc.text(`- ${item}: ${stato}`, 15, y);
+            doc.text(- ${item}: ${stato}, 15, y);
             y += 7;
-
-            if (y > 280) { // nuova pagina
-                doc.addPage();
-                y = 20;
-            }
+            if (y > 280) { doc.addPage(); y = 20; }
         });
-
         y += 5;
     }
-
-    doc.save("checklist.pdf"); // apre il salvataggio
+    doc.save("checklist.pdf");
 }
 
 createCamion();
