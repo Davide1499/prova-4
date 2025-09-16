@@ -85,7 +85,7 @@ function createCamion() {
         camionData[compartimento].forEach(item => {
             const itemDiv = document.createElement("div");
             itemDiv.className = "checklist-item";
-            itemDiv.id = row_${compartimento}_${item};
+            itemDiv.id = `row_${compartimento}_${item}`;
 
             const label = document.createElement("span");
             label.textContent = item;
@@ -95,7 +95,7 @@ function createCamion() {
 
             const pres = document.createElement("input");
             pres.type = "checkbox";
-            pres.id = pres_${compartimento}_${item};
+            pres.id = `pres_${compartimento}_${item}`;
             pres.onchange = () => toggleStatus(compartimento, item, "presente");
 
             const presLabel = document.createElement("label");
@@ -104,7 +104,7 @@ function createCamion() {
 
             const ass = document.createElement("input");
             ass.type = "checkbox";
-            ass.id = ass_${compartimento}_${item};
+            ass.id = `ass_${compartimento}_${item}`;
             ass.onchange = () => toggleStatus(compartimento, item, "assente");
 
             const assLabel = document.createElement("label");
@@ -153,9 +153,9 @@ function createCamion() {
 }
 
 function toggleStatus(compartimento, item, status) {
-    const row = document.getElementById(row_${compartimento}_${item});
-    const pres = document.getElementById(pres_${compartimento}_${item});
-    const ass = document.getElementById(ass_${compartimento}_${item});
+    const row = document.getElementById(`row_${compartimento}_${item}`);
+    const pres = document.getElementById(`pres_${compartimento}_${item}`);
+    const ass = document.getElementById(`ass_${compartimento}_${item}`);
 
     if (status === "presente") { pres.checked = true; ass.checked = false; }
     else if (status === "assente") { pres.checked = false; ass.checked = true; }
@@ -170,7 +170,7 @@ function saveChecklist() {
     const defaultName = now.toISOString().replace("T"," ").split(".")[0].replace(/:/g,"-");
     const name = prompt("Nome della checklist:", defaultName);
     if (!name) return;
-    if (localStorage.getItem(checklist_${name})) {
+    if (localStorage.getItem(`checklist_${name}`)) {
         if (!confirm("Esiste già una checklist con questo nome. Sovrascrivere?")) return;
     }
 
@@ -178,12 +178,12 @@ function saveChecklist() {
     for (const compartimento in camionData) {
         checklist[compartimento] = {};
         camionData[compartimento].forEach(item => {
-            const pres = document.getElementById(pres_${compartimento}_${item}).checked;
-            const ass = document.getElementById(ass_${compartimento}_${item}).checked;
+            const pres = document.getElementById(`pres_${compartimento}_${item}`).checked;
+            const ass = document.getElementById(`ass_${compartimento}_${item}`).checked;
             checklist[compartimento][item] = pres ? "presente" : ass ? "assente" : "none";
         });
     }
-    localStorage.setItem(checklist_${name}, JSON.stringify(checklist));
+    localStorage.setItem(`checklist_${name}`, JSON.stringify(checklist));
     alert("Checklist salvata!");
     loadSavedLists();
 }
@@ -193,7 +193,7 @@ function loadChecklist() {
     const name = select.value;
     if (!name) return;
 
-    const checklist = JSON.parse(localStorage.getItem(checklist_${name}));
+    const checklist = JSON.parse(localStorage.getItem(`checklist_${name}`));
     for (const compartimento in checklist) {
         for (const item in checklist[compartimento]) {
             toggleStatus(compartimento, item, checklist[compartimento][item]);
@@ -205,7 +205,7 @@ function deleteChecklist() {
     const select = document.getElementById("savedLists");
     const name = select.value;
     if (!name) return;
-    localStorage.removeItem(checklist_${name});
+    localStorage.removeItem(`checklist_${name}`);
     alert("Checklist eliminata!");
     loadSavedLists();
 }
@@ -245,11 +245,11 @@ function exportChecklist() {
         y += 7;
 
         camionData[compartimento].forEach(item => {
-            const pres = document.getElementById(pres_${compartimento}_${item}).checked;
-            const ass = document.getElementById(ass_${compartimento}_${item}).checked;
+            const pres = document.getElementById(`pres_${compartimento}_${item}`).checked;
+            const ass = document.getElementById(`ass_${compartimento}_${item}`).checked;
             let stato = pres ? "✔ Presente" : ass ? "✘ Assente" : "Non verificato";
             doc.setFont("helvetica", "normal");
-            doc.text(- ${item}: ${stato}, 15, y);
+            doc.text(`- ${item}: ${stato}`, 15, y);
             y += 7;
             if (y > 280) { doc.addPage(); y = 20; }
         });
