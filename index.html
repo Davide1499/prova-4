@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Checklist Camion - Pulsanti Precisi Full con Presente/Assente e PDF</title>
+<title>Checklist Camion - PDF Avanzato</title>
 <style>
 body { font-family: Arial, sans-serif; background: #f4f4f4; margin:0; padding:18px; color:#222; }
 h1 { text-align:center; margin-bottom:14px; }
@@ -21,25 +21,23 @@ svg { width:100%; height:auto; display:block; border:1px solid #ccc; border-radi
 .checklist-item.presente { background:#4CAF50; color:#fff; }
 .checklist-item.assente { background:#f44336; color:#fff; }
 label { margin-right:10px; cursor:pointer; }
-#exportPDF { display:block; margin:12px auto; padding:8px 16px; font-weight:bold; cursor:pointer; }
+#exportPDF { margin-top:10px; padding:8px 12px; cursor:pointer; background:#2196F3; color:#fff; border:none; border-radius:4px; font-weight:600; }
 </style>
 </head>
 <body>
 
-<h1>Checklist Camion — Pulsanti Precisi Full con Presente/Assente</h1>
-
-<!-- Bottone esportazione PDF -->
-<button id="exportPDF">Esporta PDF Riepilogativo</button>
+<h1>Checklist Camion — PDF Avanzato</h1>
 
 <div id="layout">
   <div id="left">
     <h2>Checklist</h2>
     <div id="camion"></div>
+    <button id="exportPDF">Esporta PDF</button>
   </div>
   <div id="right">
-    <svg id="camionSVG" viewBox="0 0 600 400">
+    <svg id="camionSVG" viewBox="0 0 600 800">
       <image href="https://davide1499.github.io/prova-5/camion.jpg" x="0" y="0" width="600" height="400"/>
-      <!-- Path tendine -->
+      <image href="https://davide1499.github.io/prova-5/ciao.jpg" x="0" y="400" width="600" height="400"/>
       <path id="Cabina" d="M360,120 C370,115 468,115 468,120 L468,220 C468,225 370,225 360,220 Z" fill="rgba(0,0,0,0.1)"/>
       <path id="Anteriore Destro" d="M252,136 C260,130 348,130 348,136 L348,280 C348,285 260,285 252,280 Z" fill="rgba(0,0,0,0.1)"/>
       <path id="Centrale Destro" d="M164,136 C170,132 246,132 246,136 L246,236 C246,240 170,240 164,236 Z" fill="rgba(0,0,0,0.1)"/>
@@ -48,10 +46,7 @@ label { margin-right:10px; cursor:pointer; }
   </div>
 </div>
 
-<!-- Librerie jsPDF e html2canvas -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
-
 <script>
 const camionData = {
   "Cabina": ["Autoradio","Paletta Segnaletica","Nastro Segnaletico"],
@@ -60,7 +55,6 @@ const camionData = {
   "Posteriore Destro": ["Premiscelatore di linea","Divisore 70/45"]
 };
 
-// Creazione UI checklist con Presente/Assente
 function createCamionUI(){
   const camionDiv=document.getElementById("camion");
   camionDiv.innerHTML="";
@@ -118,7 +112,6 @@ function createCamionUI(){
   });
 }
 
-// Creazione pulsanti hotspot
 function createHotspotButtons(){
   const svg=document.getElementById("camionSVG");
   const rightDiv=document.getElementById("right");
@@ -142,13 +135,11 @@ function createHotspotButtons(){
   window.addEventListener('resize', updateHotspotPositions);
 }
 
-// Posizionamento pulsanti sui path SVG
 function updateHotspotPositions(){
   const svg=document.getElementById("camionSVG");
   const svgRect=svg.getBoundingClientRect();
   const scaleX=svgRect.width / svg.viewBox.baseVal.width;
   const scaleY=svgRect.height / svg.viewBox.baseVal.height;
-
   document.querySelectorAll('.hotspot-btn').forEach(btn=>{
     const bbox = btn._targetPath.getBBox();
     btn.style.left = `${bbox.x * scaleX}px`;
@@ -158,25 +149,45 @@ function updateHotspotPositions(){
   });
 }
 
-// Funzione esportazione PDF
-document.getElementById("exportPDF").addEventListener("click", async () => {
-  const { jsPDF } = window.jspdf;
-  const doc = new jsPDF();
-
-  const checklistDiv = document.getElementById("camion");
-  const canvas = await html2canvas(checklistDiv, { scale: 2 });
-  const imgData = canvas.toDataURL("image/png");
-
-  const pageWidth = doc.internal.pageSize.getWidth();
-  const imgProps = doc.getImageProperties(imgData);
-  const pdfHeight = (imgProps.height * pageWidth) / imgProps.width;
-
-  doc.addImage(imgData, 'PNG', 0, 0, pageWidth, pdfHeight);
-  doc.save("checklist_camion.pdf");
-});
-
 createCamionUI();
 createHotspotButtons();
+
+// Esportazione PDF avanzata
+document.getElementById('exportPDF').addEventListener('click', async ()=>{
+  let scelta = prompt("Vuoi esportare solo ciò che manca (assente) o tutta la checklist? Digita 'manca' o 'tutta'");
+  if(!scelta) return;
+
+  let filename = prompt("Inserisci il nome del file PDF (senza estensione):", "checklist_camion");
+  if(!filename) filename = "checklist_camion";
+
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF('p','pt','a4');
+  let yOffset = 20;
+
+  Object.keys(camionData).forEach(comp=>{
+    doc.setFontSize(12);
+    doc.text(comp, 40, yOffset);
+    yOffset += 20;
+
+    const compartimentoDiv = Array.from(document.querySelectorAll('.compartimento h3'))
+      .find(h=>h.textContent===comp).nextElementSibling;
+
+    const rows = compartimentoDiv.querySelectorAll('.checklist-item');
+    rows.forEach(row=>{
+      const text = row.firstChild.textContent;
+      const stato = row.classList.contains('presente') ? "Presente" : row.classList.contains('assente') ? "Assente" : "";
+
+      if(scelta === 'manca' && stato !== "Assente") return; // salto presenti se voglio solo assenti
+
+      doc.text(`${text}: ${stato}`, 60, yOffset);
+      yOffset += 16;
+      if(yOffset > 780){ doc.addPage(); yOffset=20; }
+    });
+    yOffset += 10;
+  });
+
+  doc.save(`${filename}.pdf`);
+});
 </script>
 
 </body>
