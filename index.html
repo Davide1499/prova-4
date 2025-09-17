@@ -1,264 +1,182 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-<meta charset="UTF-8">
-<title>Checklist Camion Vigili del Fuoco</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Checklist Camion - Pulsanti Precisi Full con Presente/Assente e PDF</title>
 <style>
-    body { font-family: Arial, sans-serif; background: #f4f4f4; padding: 20px; }
-    h1 { text-align: center; }
-    .compartimento { border: 1px solid #ccc; margin: 10px 0; border-radius: 4px; background: #fff; }
-    .compartimento h3 { margin: 0; padding: 10px; cursor: pointer; background: #e0e0e0; border-radius: 4px; }
-    .checklist { margin-top: 0; padding: 10px; display: none; }
-    .checklist-item { display: flex; justify-content: space-between; align-items: center; margin: 5px 0; padding: 5px; border-radius: 4px; }
-    .checklist-item.presente { background-color: #4CAF50; color: white; }
-    .checklist-item.assente { background-color: #f44336; color: white; }
-    .checkbox-group { display: flex; gap: 10px; }
-    #savedLists { margin-top: 20px; }
-    button { margin-top: 10px; margin-right: 10px; padding: 5px 10px; font-weight: bold; cursor: pointer; }
-    #saveBtn { background-color: #4CAF50; color: white; border: none; border-radius: 4px; }
-    #resetBtn { background-color: #f44336; color: white; border: none; border-radius: 4px; }
-    #exportBtn { background-color: #2196F3; color: white; border: none; border-radius: 4px; }
+body { font-family: Arial, sans-serif; background: #f4f4f4; margin:0; padding:18px; color:#222; }
+h1 { text-align:center; margin-bottom:14px; }
+#layout { display:flex; gap:18px; flex-wrap:wrap; }
+#left { flex:1; background:#fff; padding:14px; border-radius:6px; box-shadow:0 1px 4px rgba(0,0,0,0.06); }
+#right { flex:1; min-width:300px; position:relative; }
+svg { width:100%; height:auto; display:block; border:1px solid #ccc; border-radius:6px; }
+.hotspot-btn { position:absolute; background:rgba(255,255,255,0.3); border:1px solid #2196F3; border-radius:4px; cursor:pointer; font-weight:600; text-align:center; }
+.blinking { animation: blink 1s infinite; }
+@keyframes blink { 0%,100% {opacity:1;} 50% {opacity:0.3;} }
+.compartimento { border:1px solid #ddd; margin:8px 0; border-radius:6px; overflow:hidden; }
+.compartimento h3 { margin:0; padding:10px; background:#eee; cursor:pointer; }
+.checklist { padding:10px; display:none; }
+.checklist-item { display:flex; justify-content:space-between; align-items:center; margin:6px 0; padding:6px; border-radius:4px; }
+.checklist-item.presente { background:#4CAF50; color:#fff; }
+.checklist-item.assente { background:#f44336; color:#fff; }
+label { margin-right:10px; cursor:pointer; }
+#exportPDF { display:block; margin:12px auto; padding:8px 16px; font-weight:bold; cursor:pointer; }
 </style>
 </head>
 <body>
 
-<h1>Checklist Camion Vigili del Fuoco</h1>
+<h1>Checklist Camion — Pulsanti Precisi Full con Presente/Assente</h1>
 
-<div id="camion"></div>
+<!-- Bottone esportazione PDF -->
+<button id="exportPDF">Esporta PDF Riepilogativo</button>
 
-<hr>
-<h2>Checklist Salvate</h2>
-<select id="savedLists" onchange="loadChecklist()"></select>
-<button onclick="deleteChecklist()">Elimina Checklist</button>
+<div id="layout">
+  <div id="left">
+    <h2>Checklist</h2>
+    <div id="camion"></div>
+  </div>
+  <div id="right">
+    <svg id="camionSVG" viewBox="0 0 600 400">
+      <image href="https://davide1499.github.io/prova-5/camion.jpg" x="0" y="0" width="600" height="400"/>
+      <!-- Path tendine -->
+      <path id="Cabina" d="M360,120 C370,115 468,115 468,120 L468,220 C468,225 370,225 360,220 Z" fill="rgba(0,0,0,0.1)"/>
+      <path id="Anteriore Destro" d="M252,136 C260,130 348,130 348,136 L348,280 C348,285 260,285 252,280 Z" fill="rgba(0,0,0,0.1)"/>
+      <path id="Centrale Destro" d="M164,136 C170,132 246,132 246,136 L246,236 C246,240 170,240 164,236 Z" fill="rgba(0,0,0,0.1)"/>
+      <path id="Posteriore Destro" d="M75,136 C80,132 160,132 160,136 L160,272 C160,278 80,278 75,272 Z" fill="rgba(0,0,0,0.1)"/>
+    </svg>
+  </div>
+</div>
+
+<!-- Librerie jsPDF e html2canvas -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
 
 <script>
 const camionData = {
-    "Anteriore Sinistro": ["Motosega Echo","Mototroncatore Echo","Estintore a polvere Kg 6","Estintore CO2 Kg 5",
-        "Seghetto","Tanica Metallo","2 Cuscini di sollevamento","Badile","Cesoia x Metallo",
-        "2 Calzatoie","Olio Miscela","Olio Catena","Cavo x il Tifor","Airbag Shield","Seghetto per vetro","Mazza"
-    ],
-    "Cabina": ["Autoradio","Paletta Segnaletica","Nastro Segnaletico","Confezione guanti lattice","Fanalino Portatile",
-        "Cerca fughe","Rilevatore multigas","Massa grassa x fuga gas","Chiave per ascensore","Tifor con leva",
-        "2 Tute calabroni","Spray x calabroni","Segaccio","Piccone","Ascia grande","Cassetta attrezzi"
-    ],
-    "Anteriore Destro": ["Pompa sommersa","Gruppo elettrogeno","4 Tubi aspirazione","3 Piedi","2 Fanalino portatile",
-        "Cesoia dielettrica","Guanti dielettrici","Messa a terra con cavo","Valvola di fondo"
-    ],
-    "Centrale Sinistro": ["3 Birilli segnaletici","Braga da 2 T","5 Maniglioni","4 Bombole","6 Manichette UNI 70",
-        "Disco x flex","Coppia di catene","Giratubi"
-    ],
-    "Centrale Destro": ["3 Manichette alta pressione","7 Manichette UNI 45","Faro + prese elettriche","Prolunga elettrica",
-        "Trapano","12 Chiavi fisse 6-22 mm","Molettina","2 Dischi x molettina","7 Giraviti italiani","5 Giraviti a croce",
-        "Dischi x flex","Cavetti x batteria","Pinza a pappagallo","Pinza","Tenaglia","Mazzetta","Martello"
-    ],
-    "Posteriore Sinistro": ["2 Scappelli","Divaricatore","Cesoia","Puntello idraulico","Centralina barellabile","Motoventilatore"
-    ],
-    "Posteriore Destro": ["Premiscelatore di linea","Divisore 70/45","Doppia femmina 70","Doppio maschio 70","Doppia femmina 45",
-        "Doppio maschio 45","Riduttore 70/45","Diffusore 70/70","Chiave stringi tubi","Lancia americana da 45",
-        "2 Lance da 70","2 Lance da 45","Tanica di schiumogeno","2 Tubi pesca schiumogeno"
-    ],
-    "Tetto": ["Lancia x schiuma bassa esp.","Scala italiana","Scala a ganci","Mezzo marinaio","Forcone","Fioretto dielettrico",
-        "3 Autoprotettori","Bombola","3 Maschere x autoprotettore"
-    ]
+  "Cabina": ["Autoradio","Paletta Segnaletica","Nastro Segnaletico"],
+  "Anteriore Destro": ["Pompa sommersa","Gruppo elettrogeno"],
+  "Centrale Destro": ["3 Manichette alta pressione","7 Manichette UNI 45"],
+  "Posteriore Destro": ["Premiscelatore di linea","Divisore 70/45"]
 };
 
-function createCamion() {
-    const camionDiv = document.getElementById("camion");
-    camionDiv.innerHTML = "";
+// Creazione UI checklist con Presente/Assente
+function createCamionUI(){
+  const camionDiv=document.getElementById("camion");
+  camionDiv.innerHTML="";
+  Object.keys(camionData).forEach(comp=>{
+    const div=document.createElement("div");
+    div.className="compartimento";
+    const title=document.createElement("h3");
+    title.textContent=comp;
+    div.appendChild(title);
 
-    for (const compartimento in camionData) {
-        const div = document.createElement("div");
-        div.className = "compartimento";
+    const checklistDiv=document.createElement("div");
+    checklistDiv.className="checklist";
 
-        const title = document.createElement("h3");
-        title.textContent = compartimento;
-        title.onclick = () => {
-            const checklistDiv = div.querySelector(".checklist");
-            checklistDiv.style.display = checklistDiv.style.display === "block" ? "none" : "block";
-        };
-        div.appendChild(title);
+    camionData[comp].forEach(item=>{
+      const row=document.createElement("div");
+      row.className="checklist-item";
 
-        const checklistDiv = document.createElement("div");
-        checklistDiv.className = "checklist";
+      const label=document.createElement("span");
+      label.textContent=item;
 
-        camionData[compartimento].forEach(item => {
-            const itemDiv = document.createElement("div");
-            itemDiv.className = "checklist-item";
-            itemDiv.id = `row_${compartimento}_${item}`;
+      const presLabel=document.createElement("label");
+      presLabel.textContent="Presente ";
+      const pres=document.createElement("input");
+      pres.type="checkbox";
+      presLabel.prepend(pres);
 
-            const label = document.createElement("span");
-            label.textContent = item;
+      const assLabel=document.createElement("label");
+      assLabel.textContent="Assente ";
+      const ass=document.createElement("input");
+      ass.type="checkbox";
+      assLabel.prepend(ass);
 
-            const checkboxGroup = document.createElement("div");
-            checkboxGroup.className = "checkbox-group";
+      pres.addEventListener('change', ()=>{
+        if(pres.checked) ass.checked=false;
+        row.classList.toggle('presente', pres.checked);
+        row.classList.remove('assente');
+      });
+      ass.addEventListener('change', ()=>{
+        if(ass.checked) pres.checked=false;
+        row.classList.toggle('assente', ass.checked);
+        row.classList.remove('presente');
+      });
 
-            const pres = document.createElement("input");
-            pres.type = "checkbox";
-            pres.id = `pres_${compartimento}_${item}`;
-            pres.onchange = () => toggleStatus(compartimento, item, "presente");
+      const chkGroup=document.createElement("div");
+      chkGroup.appendChild(presLabel);
+      chkGroup.appendChild(assLabel);
 
-            const presLabel = document.createElement("label");
-            presLabel.textContent = "Presente";
-            presLabel.htmlFor = pres.id;
+      row.appendChild(label);
+      row.appendChild(chkGroup);
+      checklistDiv.appendChild(row);
+    });
 
-            const ass = document.createElement("input");
-            ass.type = "checkbox";
-            ass.id = `ass_${compartimento}_${item}`;
-            ass.onchange = () => toggleStatus(compartimento, item, "assente");
-
-            const assLabel = document.createElement("label");
-            assLabel.textContent = "Assente";
-            assLabel.htmlFor = ass.id;
-
-            checkboxGroup.appendChild(pres);
-            checkboxGroup.appendChild(presLabel);
-            checkboxGroup.appendChild(ass);
-            checkboxGroup.appendChild(assLabel);
-
-            itemDiv.appendChild(label);
-            itemDiv.appendChild(checkboxGroup);
-
-            checklistDiv.appendChild(itemDiv);
-        });
-
-        div.appendChild(checklistDiv);
-        camionDiv.appendChild(div);
-    }
-
-    const btnContainer = document.createElement("div");
-    btnContainer.style.marginTop = "10px";
-
-    const saveBtn = document.createElement("button");
-    saveBtn.textContent = "Salva Checklist";
-    saveBtn.id = "saveBtn";
-    saveBtn.onclick = saveChecklist;
-
-    const resetBtn = document.createElement("button");
-    resetBtn.textContent = "Reset Checklist";
-    resetBtn.id = "resetBtn";
-    resetBtn.onclick = resetChecklist;
-
-    const exportBtn = document.createElement("button");
-    exportBtn.textContent = "Esporta in PDF";
-    exportBtn.id = "exportBtn";
-    exportBtn.onclick = exportChecklist;
-
-    btnContainer.appendChild(saveBtn);
-    btnContainer.appendChild(resetBtn);
-    btnContainer.appendChild(exportBtn);
-    camionDiv.appendChild(btnContainer);
-
-    loadSavedLists();
+    div.appendChild(checklistDiv);
+    camionDiv.appendChild(div);
+  });
 }
 
-function toggleStatus(compartimento, item, status) {
-    const row = document.getElementById(`row_${compartimento}_${item}`);
-    const pres = document.getElementById(`pres_${compartimento}_${item}`);
-    const ass = document.getElementById(`ass_${compartimento}_${item}`);
-
-    if (status === "presente") { pres.checked = true; ass.checked = false; }
-    else if (status === "assente") { pres.checked = false; ass.checked = true; }
-    else { pres.checked = false; ass.checked = false; }
-
-    row.classList.toggle("presente", pres.checked);
-    row.classList.toggle("assente", ass.checked);
+// Creazione pulsanti hotspot
+function createHotspotButtons(){
+  const svg=document.getElementById("camionSVG");
+  const rightDiv=document.getElementById("right");
+  Object.keys(camionData).forEach(comp=>{
+    const path=svg.getElementById(comp);
+    const btn=document.createElement("button");
+    btn.className="hotspot-btn";
+    btn.textContent=comp;
+    btn.dataset.path = comp;
+    btn.addEventListener('click', ()=>{
+      document.querySelectorAll('.checklist').forEach(c=>c.style.display='none');
+      const header=Array.from(document.querySelectorAll('.compartimento h3')).find(h=>h.textContent===comp);
+      if(header) header.nextElementSibling.style.display='block';
+      document.querySelectorAll('.hotspot-btn').forEach(b=>b.classList.remove('blinking'));
+      btn.classList.add('blinking');
+    });
+    rightDiv.appendChild(btn);
+    btn._targetPath = path;
+  });
+  updateHotspotPositions();
+  window.addEventListener('resize', updateHotspotPositions);
 }
 
-function saveChecklist() {
-    const now = new Date();
-    const defaultName = now.toISOString().replace("T"," ").split(".")[0].replace(/:/g,"-");
-    const name = prompt("Nome della checklist:", defaultName);
-    if (!name) return;
-    if (localStorage.getItem(`checklist_${name}`)) {
-        if (!confirm("Esiste già una checklist con questo nome. Sovrascrivere?")) return;
-    }
+// Posizionamento pulsanti sui path SVG
+function updateHotspotPositions(){
+  const svg=document.getElementById("camionSVG");
+  const svgRect=svg.getBoundingClientRect();
+  const scaleX=svgRect.width / svg.viewBox.baseVal.width;
+  const scaleY=svgRect.height / svg.viewBox.baseVal.height;
 
-    const checklist = {};
-    for (const compartimento in camionData) {
-        checklist[compartimento] = {};
-        camionData[compartimento].forEach(item => {
-            const pres = document.getElementById(`pres_${compartimento}_${item}`).checked;
-            const ass = document.getElementById(`ass_${compartimento}_${item}`).checked;
-            checklist[compartimento][item] = pres ? "presente" : ass ? "assente" : "none";
-        });
-    }
-    localStorage.setItem(`checklist_${name}`, JSON.stringify(checklist));
-    alert("Checklist salvata!");
-    loadSavedLists();
+  document.querySelectorAll('.hotspot-btn').forEach(btn=>{
+    const bbox = btn._targetPath.getBBox();
+    btn.style.left = `${bbox.x * scaleX}px`;
+    btn.style.top  = `${bbox.y * scaleY}px`;
+    btn.style.width = `${bbox.width * scaleX}px`;
+    btn.style.height = `${bbox.height * scaleY}px`;
+  });
 }
 
-function loadChecklist() {
-    const select = document.getElementById("savedLists");
-    const name = select.value;
-    if (!name) return;
+// Funzione esportazione PDF
+document.getElementById("exportPDF").addEventListener("click", async () => {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
 
-    const checklist = JSON.parse(localStorage.getItem(`checklist_${name}`));
-    for (const compartimento in checklist) {
-        for (const item in checklist[compartimento]) {
-            toggleStatus(compartimento, item, checklist[compartimento][item]);
-        }
-    }
-}
+  const checklistDiv = document.getElementById("camion");
+  const canvas = await html2canvas(checklistDiv, { scale: 2 });
+  const imgData = canvas.toDataURL("image/png");
 
-function deleteChecklist() {
-    const select = document.getElementById("savedLists");
-    const name = select.value;
-    if (!name) return;
-    localStorage.removeItem(`checklist_${name}`);
-    alert("Checklist eliminata!");
-    loadSavedLists();
-}
+  const pageWidth = doc.internal.pageSize.getWidth();
+  const imgProps = doc.getImageProperties(imgData);
+  const pdfHeight = (imgProps.height * pageWidth) / imgProps.width;
 
-function resetChecklist() {
-    if (!confirm("Sei sicuro di voler resettare tutte le checkbox?")) return;
-    for (const compartimento in camionData) {
-        camionData[compartimento].forEach(item => toggleStatus(compartimento, item, "none"));
-    }
-}
+  doc.addImage(imgData, 'PNG', 0, 0, pageWidth, pdfHeight);
+  doc.save("checklist_camion.pdf");
+});
 
-function loadSavedLists() {
-    const select = document.getElementById("savedLists");
-    select.innerHTML = "";
-    for (let i = 0; i < localStorage.length; i++) {
-        const key = localStorage.key(i);
-        if (key.startsWith("checklist_")) {
-            const option = document.createElement("option");
-            option.value = key.substring(10);
-            option.textContent = key.substring(10);
-            select.appendChild(option);
-        }
-    }
-}
-
-function exportChecklist() {
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF();
-    doc.setFontSize(18);
-    doc.text("Checklist Camion Vigili del Fuoco", 10, 15);
-    doc.setFontSize(12);
-
-    let y = 30;
-    for (const compartimento in camionData) {
-        doc.setFont("helvetica", "bold");
-        doc.text(compartimento, 10, y);
-        y += 7;
-
-        camionData[compartimento].forEach(item => {
-            const pres = document.getElementById(`pres_${compartimento}_${item}`).checked;
-            const ass = document.getElementById(`ass_${compartimento}_${item}`).checked;
-            let stato = pres ? "✔ Presente" : ass ? "✘ Assente" : "Non verificato";
-            doc.setFont("helvetica", "normal");
-            doc.text(`- ${item}: ${stato}`, 15, y);
-            y += 7;
-            if (y > 280) { doc.addPage(); y = 20; }
-        });
-        y += 5;
-    }
-    doc.save("checklist.pdf");
-}
-
-createCamion();
+createCamionUI();
+createHotspotButtons();
 </script>
 
 </body>
