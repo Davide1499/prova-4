@@ -11,9 +11,6 @@ h1 { text-align:center; margin-bottom:14px; }
 #left { flex:1; background:#fff; padding:14px; border-radius:6px; box-shadow:0 1px 4px rgba(0,0,0,0.06); }
 #right { flex:1; min-width:300px; position:relative; }
 svg { width:100%; height:auto; display:block; border:1px solid #ccc; border-radius:6px; }
-.hotspot-btn { position:absolute; background:rgba(255,255,255,0.3); border:1px solid #2196F3; border-radius:4px; cursor:pointer; font-weight:600; text-align:center; }
-.blinking { animation: blink 1s infinite; }
-@keyframes blink { 0%,100% {opacity:1;} 50% {opacity:0.3;} }
 .compartimento { border:1px solid #ddd; margin:8px 0; border-radius:6px; overflow:hidden; }
 .compartimento h3 { margin:0; padding:10px; background:#eee; cursor:pointer; }
 .checklist { padding:10px; display:none; }
@@ -22,6 +19,45 @@ svg { width:100%; height:auto; display:block; border:1px solid #ccc; border-radi
 .checklist-item.assente { background:#f44336; color:#fff; }
 label { margin-right:10px; cursor:pointer; }
 #exportPDF { margin-top:10px; padding:8px 12px; cursor:pointer; background:#2196F3; color:#fff; border:none; border-radius:4px; font-weight:600; }
+
+/* Bottoni visibili ma senza testo */
+.hotspot-btn { 
+  position:absolute; 
+  background:rgba(33,150,243,0.25);
+  border:3px solid #2196F3;
+  border-radius:6px; 
+  cursor:pointer; 
+}
+.blinking { 
+  animation: blink 1s infinite; 
+  border-color:#1976D2 !important; 
+}
+@keyframes blink { 
+  0%,100% {opacity:1;} 
+  50% {opacity:0.4;} 
+}
+
+/* Finestra di scelta per il PDF */
+#pdfModal {
+  position: fixed;
+  top: 0; left: 0; width: 100%; height: 100%;
+  background: rgba(0,0,0,0.5);
+  display: none; align-items: center; justify-content: center;
+}
+#pdfModalContent {
+  background: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  max-width: 350px;
+  width: 100%;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+}
+#pdfModalContent h3 { margin-top: 0; }
+#pdfModalContent label { display:block; margin:6px 0; }
+#pdfModalContent input[type="text"] { width: 100%; padding:6px; margin-top:8px; margin-bottom:12px; }
+#pdfModalContent button { padding:8px 12px; margin-right:8px; cursor:pointer; border:none; border-radius:4px; }
+#confirmPDF { background:#2196F3; color:#fff; font-weight:600; }
+#cancelPDF { background:#ccc; }
 </style>
 </head>
 <body>
@@ -43,6 +79,20 @@ label { margin-right:10px; cursor:pointer; }
       <path id="Centrale Destro" d="M164,136 C170,132 246,132 246,136 L246,236 C246,240 170,240 164,236 Z" fill="rgba(0,0,0,0.1)"/>
       <path id="Posteriore Destro" d="M75,136 C80,132 160,132 160,136 L160,272 C160,278 80,278 75,272 Z" fill="rgba(0,0,0,0.1)"/>
     </svg>
+  </div>
+</div>
+
+<!-- Modale per esportazione PDF -->
+<div id="pdfModal">
+  <div id="pdfModalContent">
+    <h3>Esporta PDF</h3>
+    <label><input type="radio" name="pdfChoice" value="tutta" checked> Tutta la checklist</label>
+    <label><input type="radio" name="pdfChoice" value="manca"> Solo elementi mancanti</label>
+    <input type="text" id="pdfFilename" placeholder="Nome file (senza estensione)" value="checklist_camion">
+    <div>
+      <button id="confirmPDF">Esporta</button>
+      <button id="cancelPDF">Annulla</button>
+    </div>
   </div>
 </div>
 
@@ -119,7 +169,7 @@ function createHotspotButtons(){
     const path=svg.getElementById(comp);
     const btn=document.createElement("button");
     btn.className="hotspot-btn";
-    btn.textContent=comp;
+    btn.textContent=""; 
     btn.dataset.path = comp;
     btn.addEventListener('click', ()=>{
       document.querySelectorAll('.checklist').forEach(c=>c.style.display='none');
@@ -152,12 +202,14 @@ function updateHotspotPositions(){
 createCamionUI();
 createHotspotButtons();
 
-// Esportazione PDF avanzata
-document.getElementById('exportPDF').addEventListener('click', async ()=>{
-  let scelta = prompt("Vuoi esportare solo ciò che manca (assente) o tutta la checklist? Digita 'manca' o 'tutta'");
-  if(!scelta) return;
+// Modale per PDF
+const modal = document.getElementById('pdfModal');
+document.getElementById('exportPDF').addEventListener('click', ()=> modal.style.display="flex");
+document.getElementById('cancelPDF').addEventListener('click', ()=> modal.style.display="none");
 
-  let filename = prompt("Inserisci il nome del file PDF (senza estensione):", "checklist_camion");
+document.getElementById('confirmPDF').addEventListener('click', ()=>{
+  const scelta = document.querySelector('input[name="pdfChoice"]:checked').value;
+  let filename = document.getElementById('pdfFilename').value.trim();
   if(!filename) filename = "checklist_camion";
 
   const { jsPDF } = window.jspdf;
@@ -177,7 +229,7 @@ document.getElementById('exportPDF').addEventListener('click', async ()=>{
       const text = row.firstChild.textContent;
       const stato = row.classList.contains('presente') ? "Presente" : row.classList.contains('assente') ? "Assente" : "";
 
-      if(scelta === 'manca' && stato !== "Assente") return; // salto presenti se voglio solo assenti
+      if(scelta === 'manca' && stato !== "Assente") return;
 
       doc.text(`${text}: ${stato}`, 60, yOffset);
       yOffset += 16;
@@ -187,6 +239,7 @@ document.getElementById('exportPDF').addEventListener('click', async ()=>{
   });
 
   doc.save(`${filename}.pdf`);
+  modal.style.display="none";
 });
 </script>
 
