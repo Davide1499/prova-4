@@ -13,6 +13,7 @@ h1 { text-align:center; margin-bottom:14px; }
 svg { width:100%; height:auto; display:block; border:1px solid #ccc; border-radius:6px; }
 .compartimento { border:1px solid #ddd; margin:8px 0; border-radius:6px; overflow:hidden; }
 .compartimento h3 { margin:0; padding:10px; background:#eee; cursor:pointer; }
+.subcategory { margin-left:20px; border-left:2px dashed #aaa; padding-left:10px; margin-top:6px; }
 .checklist { padding:10px; display:none; }
 .checklist-item { display:flex; justify-content:space-between; align-items:center; margin:6px 0; padding:6px; border-radius:4px; }
 .checklist-item.presente { background:#4CAF50; color:#fff; }
@@ -20,7 +21,7 @@ svg { width:100%; height:auto; display:block; border:1px solid #ccc; border-radi
 label { margin-right:10px; cursor:pointer; }
 #exportPDF { margin-top:10px; padding:8px 12px; cursor:pointer; background:#2196F3; color:#fff; border:none; border-radius:4px; font-weight:600; }
 
-/* Bottoni visibili ma senza testo */
+/* Bottoni */
 .hotspot-btn { 
   position:absolute; 
   background:rgba(33,150,243,0.25);
@@ -37,27 +38,17 @@ label { margin-right:10px; cursor:pointer; }
   50% {opacity:0.4;} 
 }
 
-/* Finestra di scelta per il PDF */
-#pdfModal {
-  position: fixed;
-  top: 0; left: 0; width: 100%; height: 100%;
-  background: rgba(0,0,0,0.5);
-  display: none; align-items: center; justify-content: center;
+/* Lampeggio dolce per la checklist con sfumatura finale */
+@keyframes focusBlink {
+  0%   { background-color: transparent; }
+  25%  { background-color: rgba(33,150,243,0.25); }
+  50%  { background-color: rgba(33,150,243,0.25); }
+  75%  { background-color: rgba(33,150,243,0.15); }
+  100% { background-color: transparent; }
 }
-#pdfModalContent {
-  background: #fff;
-  padding: 20px;
-  border-radius: 8px;
-  max-width: 350px;
-  width: 100%;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+.focus-blink {
+  animation: focusBlink 0.8s ease-in-out 3;
 }
-#pdfModalContent h3 { margin-top: 0; }
-#pdfModalContent label { display:block; margin:6px 0; }
-#pdfModalContent input[type="text"] { width: 100%; padding:6px; margin-top:8px; margin-bottom:12px; }
-#pdfModalContent button { padding:8px 12px; margin-right:8px; cursor:pointer; border:none; border-radius:4px; }
-#confirmPDF { background:#2196F3; color:#fff; font-weight:600; }
-#cancelPDF { background:#ccc; }
 </style>
 </head>
 <body>
@@ -74,35 +65,52 @@ label { margin-right:10px; cursor:pointer; }
     <svg id="camionSVG" viewBox="0 0 600 800">
       <image href="https://davide1499.github.io/prova-5/camion.jpg" x="0" y="0" width="600" height="400"/>
       <image href="https://davide1499.github.io/prova-5/ciao.jpg" x="0" y="400" width="600" height="400"/>
+
+      <!-- Path lato destro -->
       <path id="Cabina" d="M360,120 C370,115 468,115 468,120 L468,220 C468,225 370,225 360,220 Z" fill="rgba(0,0,0,0.1)"/>
       <path id="Anteriore Destro" d="M252,136 C260,130 348,130 348,136 L348,280 C348,285 260,285 252,280 Z" fill="rgba(0,0,0,0.1)"/>
       <path id="Centrale Destro" d="M164,136 C170,132 246,132 246,136 L246,236 C246,240 170,240 164,236 Z" fill="rgba(0,0,0,0.1)"/>
       <path id="Posteriore Destro" d="M75,136 C80,132 160,132 160,136 L160,272 C160,278 80,278 75,272 Z" fill="rgba(0,0,0,0.1)"/>
-    </svg>
-  </div>
-</div>
 
-<!-- Modale per esportazione PDF -->
-<div id="pdfModal">
-  <div id="pdfModalContent">
-    <h3>Esporta PDF</h3>
-    <label><input type="radio" name="pdfChoice" value="tutta" checked> Tutta la checklist</label>
-    <label><input type="radio" name="pdfChoice" value="manca"> Solo elementi mancanti</label>
-    <input type="text" id="pdfFilename" placeholder="Nome file (senza estensione)" value="checklist_camion">
-    <div>
-      <button id="confirmPDF">Esporta</button>
-      <button id="cancelPDF">Annulla</button>
-    </div>
+      <!-- Path lato sinistro -->
+      <path id="Anteriore Sinistro" d="M75,136 C80,132 160,132 160,136 L160,272 C160,276 80,276 75,272 Z" fill="rgba(0,0,0,0.1)"/>
+      <path id="Centrale Sinistro" d="M164,136 C170,132 246,132 246,136 L246,236 C246,240 170,240 164,236 Z" fill="rgba(0,0,0,0.1)"/>
+      <path id="Posteriore Sinistro" d="M252,136 C260,130 348,130 348,136 L348,280 C348,285 260,285 252,280 Z" fill="rgba(0,0,0,0.1)"/>
+
+      <rect x="0" y="0" width="600" height="30" fill="#fff"/>
+      <text x="300" y="22" text-anchor="middle" font-size="20" font-weight="bold" fill="#000">Lato destro</text>
+
+      <rect x="0" y="400" width="600" height="30" fill="#fff"/>
+      <text x="300" y="422" text-anchor="middle" font-size="20" font-weight="bold" fill="#000">Lato sinistro</text>
+    </svg>
   </div>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script>
 const camionData = {
-  "Cabina": ["Autoradio","Paletta Segnaletica","Nastro Segnaletico"],
-  "Anteriore Destro": ["Pompa sommersa","Gruppo elettrogeno"],
-  "Centrale Destro": ["3 Manichette alta pressione","7 Manichette UNI 45"],
-  "Posteriore Destro": ["Premiscelatore di linea","Divisore 70/45"]
+  "Cabina": ["Autoradio","Paletta Segnaletica","Nastro Segnaletico","Confezione guanti lattice","Fanalino Portatile",
+        "Cerca fughe","Rilevatore multigas","Massa grassa x fuga gas","Chiave per ascensore","Tifor con leva",
+        "2 Tute calabroni","Spray x calabroni","Segaccio","Piccone","Ascia grande","Cassetta attrezzi"],
+  "Anteriore Destro": ["Pompa sommersa","Gruppo elettrogeno","4 Tubi aspirazione","3 Piedi","2 Fanalino portatile",
+        "Cesoia dielettrica","Guanti dielettrici","Messa a terra con cavo","Valvola di fondo"],
+  "Centrale Destro": {
+      items: ["3 Manichette alta pressione","7 Manichette UNI 45","Faro + prese elettriche","Prolunga elettrica",
+        "Trapano",
+        "Dischi x flex","Cavetti x batteria"],
+      subcategories: {
+          "Cassetta Attrezzi": ["12 Chiavi fisse 6-22 mm","Molettina","2 Dischi x molettina","7 Giraviti italiani","5 Giraviti a croce","Mazzetta","Martello"]
+      }
+  },
+  "Posteriore Destro": ["Premiscelatore di linea","Divisore 70/45","Doppia femmina 70","Doppio maschio 70","Doppia femmina 45",
+        "Doppio maschio 45","Riduttore 70/45","Diffusore 70/70","Chiave stringi tubi","Lancia americana da 45",
+        "2 Lance da 70","2 Lance da 45","Tanica di schiumogeno","2 Tubi pesca schiumogeno"],
+  "Anteriore Sinistro": ["Motosega Echo","Mototroncatore Echo","Estintore a polvere Kg 6","Estintore CO2 Kg 5",
+        "Seghetto","Tanica Metallo","2 Cuscini di sollevamento","Badile","Cesoia x Metallo",
+        "2 Calzatoie","Olio Miscela","Olio Catena","Cavo x il Tifor","Airbag Shield","Seghetto per vetro","Mazza"],
+  "Centrale Sinistro": ["3 Birilli segnaletici","Braga da 2 T","5 Maniglioni","4 Bombole","6 Manichette UNI 70",
+        "Disco x flex","Coppia di catene","Giratubi"],
+  "Posteriore Sinistro": ["2 Scappelli","Divaricatore","Cesoia","Puntello idraulico","Centralina barellabile","Motoventilatore"]
 };
 
 function createCamionUI(){
@@ -118,43 +126,32 @@ function createCamionUI(){
     const checklistDiv=document.createElement("div");
     checklistDiv.className="checklist";
 
-    camionData[comp].forEach(item=>{
-      const row=document.createElement("div");
-      row.className="checklist-item";
+    let items = [];
+    let subcategories = {};
 
-      const label=document.createElement("span");
-      label.textContent=item;
+    if(Array.isArray(camionData[comp])){
+      items = camionData[comp];
+    } else {
+      items = camionData[comp].items;
+      subcategories = camionData[comp].subcategories || {};
+    }
 
-      const presLabel=document.createElement("label");
-      presLabel.textContent="Presente ";
-      const pres=document.createElement("input");
-      pres.type="checkbox";
-      presLabel.prepend(pres);
+    // Creazione elementi principali
+    items.forEach(item=>{
+      checklistDiv.appendChild(createChecklistRow(item));
+    });
 
-      const assLabel=document.createElement("label");
-      assLabel.textContent="Assente ";
-      const ass=document.createElement("input");
-      ass.type="checkbox";
-      assLabel.prepend(ass);
-
-      pres.addEventListener('change', ()=>{
-        if(pres.checked) ass.checked=false;
-        row.classList.toggle('presente', pres.checked);
-        row.classList.remove('assente');
+    // Creazione sottocategorie
+    Object.keys(subcategories).forEach(sub=>{
+      const subDiv = document.createElement("div");
+      subDiv.className = "subcategory";
+      const subTitle = document.createElement("h4");
+      subTitle.textContent = sub;
+      subDiv.appendChild(subTitle);
+      subcategories[sub].forEach(subItem=>{
+        subDiv.appendChild(createChecklistRow(subItem));
       });
-      ass.addEventListener('change', ()=>{
-        if(ass.checked) pres.checked=false;
-        row.classList.toggle('assente', ass.checked);
-        row.classList.remove('presente');
-      });
-
-      const chkGroup=document.createElement("div");
-      chkGroup.appendChild(presLabel);
-      chkGroup.appendChild(assLabel);
-
-      row.appendChild(label);
-      row.appendChild(chkGroup);
-      checklistDiv.appendChild(row);
+      checklistDiv.appendChild(subDiv);
     });
 
     div.appendChild(checklistDiv);
@@ -162,85 +159,187 @@ function createCamionUI(){
   });
 }
 
-function createHotspotButtons(){
-  const svg=document.getElementById("camionSVG");
-  const rightDiv=document.getElementById("right");
-  Object.keys(camionData).forEach(comp=>{
-    const path=svg.getElementById(comp);
-    const btn=document.createElement("button");
-    btn.className="hotspot-btn";
-    btn.textContent=""; 
-    btn.dataset.path = comp;
-    btn.addEventListener('click', ()=>{
-      document.querySelectorAll('.checklist').forEach(c=>c.style.display='none');
-      const header=Array.from(document.querySelectorAll('.compartimento h3')).find(h=>h.textContent===comp);
-      if(header) header.nextElementSibling.style.display='block';
-      document.querySelectorAll('.hotspot-btn').forEach(b=>b.classList.remove('blinking'));
-      btn.classList.add('blinking');
-    });
-    rightDiv.appendChild(btn);
-    btn._targetPath = path;
+function createChecklistRow(labelText){
+  const row=document.createElement("div");
+  row.className="checklist-item";
+  const label=document.createElement("span");
+  label.textContent=labelText;
+
+  const pres = document.createElement("input"); pres.type="checkbox";
+  const ass = document.createElement("input"); ass.type="checkbox";
+
+  pres.addEventListener('change', ()=>{
+    if(pres.checked) ass.checked=false;
+    row.classList.toggle('presente', pres.checked);
+    row.classList.remove('assente');
   });
+  ass.addEventListener('change', ()=>{
+    if(ass.checked) pres.checked=false;
+    row.classList.toggle('assente', ass.checked);
+    row.classList.remove('presente');
+  });
+
+  const chkGroup = document.createElement("div");
+  chkGroup.style.display="flex";
+  chkGroup.style.gap="10px";
+
+  const presContainer = document.createElement("div");
+  presContainer.style.display="flex";
+  presContainer.style.flexDirection="column";
+  presContainer.style.alignItems="center";
+  const presSymbol = document.createElement("span");
+  presSymbol.textContent = "✅";
+  presSymbol.style.color="green";
+  presSymbol.style.fontSize="16px";
+  presContainer.appendChild(presSymbol);
+  presContainer.appendChild(pres);
+
+  const assContainer = document.createElement("div");
+  assContainer.style.display="flex";
+  assContainer.style.flexDirection="column";
+  assContainer.style.alignItems="center";
+  const assSymbol = document.createElement("span");
+  assSymbol.textContent = "❌";
+  assSymbol.style.color="red";
+  assSymbol.style.fontSize="16px";
+  assContainer.appendChild(assSymbol);
+  assContainer.appendChild(ass);
+
+  chkGroup.appendChild(presContainer);
+  chkGroup.appendChild(assContainer);
+
+  row.appendChild(label);
+  row.appendChild(chkGroup);
+
+  return row;
+}
+
+// --- Resto del codice per hotspot, export PDF ecc. ---
+// (Mantieni tutto il codice originale delle funzioni createHotspotButtons, updateHotspotPositions, exportPDF)
+
+function createHotspotButtons(){
+  const svg = document.getElementById("camionSVG");
+  const rightDiv = document.getElementById("right");
+
+  Object.keys(camionData).forEach(comp => {
+    const path = svg.getElementById(comp);
+    if(path){
+      const btn = document.createElement("button");
+      btn.className = "hotspot-btn";
+      btn.dataset.path = comp;
+
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.checklist').forEach(c => c.style.display='none');
+        const header = Array.from(document.querySelectorAll('.compartimento h3'))
+                            .find(h => h.textContent===comp);
+        if(header){
+          const checklistDiv = header.nextElementSibling;
+          checklistDiv.style.display='block';
+          checklistDiv.classList.remove('focus-blink');
+          void checklistDiv.offsetWidth; // trigger reflow
+          checklistDiv.classList.add('focus-blink');
+          checklistDiv.scrollIntoView({behavior:'smooth', block:'center'});
+        }
+        document.querySelectorAll('.hotspot-btn').forEach(b=>b.classList.remove('blinking'));
+        btn.classList.add('blinking');
+      });
+
+      rightDiv.appendChild(btn);
+      btn._targetPath = path;
+    }
+  });
+
   updateHotspotPositions();
   window.addEventListener('resize', updateHotspotPositions);
 }
 
 function updateHotspotPositions(){
-  const svg=document.getElementById("camionSVG");
-  const svgRect=svg.getBoundingClientRect();
-  const scaleX=svgRect.width / svg.viewBox.baseVal.width;
-  const scaleY=svgRect.height / svg.viewBox.baseVal.height;
-  document.querySelectorAll('.hotspot-btn').forEach(btn=>{
+  const svg = document.getElementById("camionSVG");
+  const svgRect = svg.getBoundingClientRect();
+  const scaleX = svgRect.width / svg.viewBox.baseVal.width;
+  const scaleY = svgRect.height / svg.viewBox.baseVal.height;
+
+  const btnAnteriore = document.querySelector('.hotspot-btn[data-path="Anteriore Sinistro"]');
+  const btnCentrale  = document.querySelector('.hotspot-btn[data-path="Centrale Sinistro"]');
+  const btnPosteriore= document.querySelector('.hotspot-btn[data-path="Posteriore Sinistro"]');
+
+  document.querySelectorAll('.hotspot-btn').forEach(btn => {
     const bbox = btn._targetPath.getBBox();
-    btn.style.left = `${bbox.x * scaleX}px`;
-    btn.style.top  = `${bbox.y * scaleY}px`;
-    btn.style.width = `${bbox.width * scaleX}px`;
-    btn.style.height = `${bbox.height * scaleY}px`;
+    let x = bbox.x * scaleX;
+    let y = bbox.y * scaleY;
+    let width = bbox.width * scaleX;
+    let height = bbox.height * scaleY;
+
+    if(btn.dataset.path.includes("Sinistro")){
+      x += svgRect.width * 0.3; 
+      y += 400 * scaleY;
+      if(btn.dataset.path==="Anteriore Sinistro") x-=5;
+      if(btn.dataset.path==="Centrale Sinistro") x+=2;
+    }
+
+    if(btn===btnAnteriore){
+      width = btnPosteriore._targetPath.getBBox().width*scaleX;
+      height = btnPosteriore._targetPath.getBBox().height*scaleY;
+    } else if(btn===btnPosteriore){
+      width = btnAnteriore._targetPath.getBBox().width*scaleX;
+      height = btnAnteriore._targetPath.getBBox().height*scaleY;
+    }
+
+    btn.style.left=`${x}px`;
+    btn.style.top=`${y}px`;
+    btn.style.width=`${width}px`;
+    btn.style.height=`${height}px`;
   });
 }
 
-createCamionUI();
-createHotspotButtons();
+function exportPDF(){
+  const scelta = prompt(
+    "Scegli opzione di esportazione:\n" +
+    "1 = Esporta tutta la checklist\n" +
+    "2 = Esporta solo il materiale mancante"
+  );
+  if(scelta===null || scelta==="3") return;
+  const soloAssenti = scelta==="2";
 
-// Modale per PDF
-const modal = document.getElementById('pdfModal');
-document.getElementById('exportPDF').addEventListener('click', ()=> modal.style.display="flex");
-document.getElementById('cancelPDF').addEventListener('click', ()=> modal.style.display="none");
-
-document.getElementById('confirmPDF').addEventListener('click', ()=>{
-  const scelta = document.querySelector('input[name="pdfChoice"]:checked').value;
-  let filename = document.getElementById('pdfFilename').value.trim();
-  if(!filename) filename = "checklist_camion";
+  let fileName = prompt("Inserisci il nome del file PDF:", "checklist-camion");
+  if(!fileName) fileName="checklist-camion";
 
   const { jsPDF } = window.jspdf;
-  const doc = new jsPDF('p','pt','a4');
-  let yOffset = 20;
+  const doc = new jsPDF();
+  let yOffset = 10;
+  const compartimenti = document.querySelectorAll(".compartimento");
 
-  Object.keys(camionData).forEach(comp=>{
-    doc.setFontSize(12);
-    doc.text(comp, 40, yOffset);
-    yOffset += 20;
+  compartimenti.forEach(div=>{
+    const h3 = div.querySelector("h3");
+    doc.setFontSize(14);
+    doc.text(h3.textContent, 10, yOffset);
+    yOffset += 8;
 
-    const compartimentoDiv = Array.from(document.querySelectorAll('.compartimento h3'))
-      .find(h=>h.textContent===comp).nextElementSibling;
+    const items = div.querySelectorAll(".checklist-item");
+    items.forEach(item=>{
+      const isPresente = item.classList.contains("presente");
+      const isAssente = item.classList.contains("assente");
 
-    const rows = compartimentoDiv.querySelectorAll('.checklist-item');
-    rows.forEach(row=>{
-      const text = row.firstChild.textContent;
-      const stato = row.classList.contains('presente') ? "Presente" : row.classList.contains('assente') ? "Assente" : "";
-
-      if(scelta === 'manca' && stato !== "Assente") return;
-
-      doc.text(`${text}: ${stato}`, 60, yOffset);
-      yOffset += 16;
-      if(yOffset > 780){ doc.addPage(); yOffset=20; }
+      if(!soloAssenti || (soloAssenti && isAssente)){
+        const label = item.querySelector("span").textContent;
+        const stato = isPresente ? "✅" : isAssente ? "❌" : "";
+        doc.setFontSize(12);
+        doc.text(`- ${label} ${stato}`, 12, yOffset);
+        yOffset += 7;
+      }
     });
-    yOffset += 10;
+
+    yOffset += 5;
+    if(yOffset>280){ doc.addPage(); yOffset=10; }
   });
 
-  doc.save(`${filename}.pdf`);
-  modal.style.display="none";
-});
+  doc.save(fileName+".pdf");
+}
+
+document.getElementById("exportPDF").addEventListener("click", exportPDF);
+
+createCamionUI();
+createHotspotButtons();
 </script>
 
 </body>
