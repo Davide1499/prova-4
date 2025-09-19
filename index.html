@@ -3,16 +3,18 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Checklist Camion - PDF Avanzato</title>
+<title>Checklist Aps</title>
 <style>
 body { font-family: Arial, sans-serif; background: #f4f4f4; margin:0; padding:18px; color:#222; }
 h1 { text-align:center; margin-bottom:14px; }
 #layout { display:flex; gap:18px; flex-wrap:wrap; }
+    
 #left { flex:1; background:#fff; padding:14px; border-radius:6px; box-shadow:0 1px 4px rgba(0,0,0,0.06); }
 #right { flex:1; min-width:300px; position:relative; }
 svg { width:100%; height:auto; display:block; border:1px solid #ccc; border-radius:6px; }
+
 .compartimento { border:1px solid #ddd; margin:8px 0; border-radius:6px; overflow:hidden; }
-.compartimento h3 { margin:0; padding:10px; background:#eee; cursor:pointer; }
+.compartimento h3 { margin:0; padding:10px; background:#eee; cursor:pointer; transition: background 0.3s; }
 .subcategory { margin-left:20px; border-left:2px dashed #aaa; padding-left:10px; margin-top:6px; }
 .subcategory h4 { margin:0; }
 .checklist { padding:10px; display:none; }
@@ -20,15 +22,21 @@ svg { width:100%; height:auto; display:block; border:1px solid #ccc; border-radi
 .checklist-item.presente { background:#4CAF50; color:#fff; }
 .checklist-item.assente { background:#f44336; color:#fff; }
 label { margin-right:10px; cursor:pointer; }
-#exportPDF { margin-top:10px; padding:8px 12px; cursor:pointer; background:#2196F3; color:#fff; border:none; border-radius:4px; font-weight:600; }
+#exportPDF, #schedaTecnica { margin-top:10px; padding:8px 12px; cursor:pointer; color:#fff; border:none; border-radius:4px; font-weight:600; }
+#exportPDF { background:#2196F3; }
+#schedaTecnica { background:#FF9800; }
 
-/* Bottoni */
+/* Bottoni fissi */
 .hotspot-btn { 
   position:absolute; 
   background:rgba(33,150,243,0.25);
   border:3px solid #2196F3;
   border-radius:6px; 
   cursor:pointer; 
+  font-size:14px;
+  text-align:center;
+  line-height:1.2em;
+  transform: translate(-50%, -50%);
 }
 .blinking { 
   animation: blink 1s infinite; 
@@ -45,11 +53,10 @@ label { margin-right:10px; cursor:pointer; }
   25%  { background-color: rgba(33,150,243,0.25); }
  50%  { background-color: rgba(33,150,243,0.25); }
   75%  { background-color: rgba(33,150,243,0.15); }
-  100% { background-color: transparent; 
- }
+  100% { background-color: transparent; }
 }
 .focus-blink {
-  animation: focusBlink 0.8s ease-in-out 1;
+  animation: focusBlink 1s ease-in-out 1;
 }
 
 /* Animazione sottocategorie */
@@ -61,6 +68,25 @@ label { margin-right:10px; cursor:pointer; }
 .subcategory.open div {
   max-height: 1000px;
 }
+
+/* Compartimento completato */
+.compartimento h3.completed {
+  background: #4CAF50;
+  color: #fff;
+}
+.hotspot-btn.completed {
+  background: rgba(76, 175, 80, 0.25) !important;
+  border-color: #4CAF50 !important;
+}
+
+/* Modale scheda tecnica */
+#modalScheda { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); justify-content:center; align-items:center; z-index:1000; }
+#modalSchedaContent { background:#fff; border-radius:8px; max-width:800px; width:90%; max-height:90%; overflow:auto; padding:20px; position:relative; display:flex; flex-direction:column; gap:15px; }
+#modalSchedaContent img { width:100%; border-radius:6px; max-height:400px; object-fit:contain; }
+#closeModal { position:absolute; top:10px; right:10px; background:#f44336; color:#fff; border:none; border-radius:50%; width:30px; height:30px; cursor:pointer; font-weight:bold; }
+#prevSlide, #nextSlide { position:absolute; top:50%; transform:translateY(-50%); background:rgba(0,0,0,0.5); color:#fff; border:none; font-size:24px; padding:6px 12px; cursor:pointer; }
+#prevSlide { left:0; }
+#nextSlide { right:0; }
 </style>
 </head>
 <body>
@@ -72,34 +98,70 @@ label { margin-right:10px; cursor:pointer; }
     <h2>Checklist</h2>
     <div id="camion"></div>
     <button id="exportPDF">Esporta PDF</button>
+    <button id="schedaTecnica">Scheda Tecnica</button>
   </div>
   <div id="right">
-    <svg id="camionSVG" viewBox="0 0 600 800">
+    <svg id="camionSVG" viewBox="0 0 600 2000">
       <image href="https://davide1499.github.io/prova-5/camion.jpg" x="0" y="0" width="600" height="400"/>
-      <image href="https://davide1499.github.io/prova-5/ciao.jpg" x="0" y="400" width="600" height="400"/>
-
-      <!-- Path lato destro -->
-      <path id="Cabina" d="M360,120 C370,115 468,115 468,120 L468,220 C468,225 370,225 360,220 Z" fill="rgba(0,0,0,0.1)"/>
-      <path id="Anteriore Destro" d="M252,136 C260,130 348,130 348,136 L348,280 C348,285 260,285 252,280 Z" fill="rgba(0,0,0,0.1)"/>
-      <path id="Centrale Destro" d="M164,136 C170,132 246,132 246,136 L246,236 C246,240 170,240 164,236 Z" fill="rgba(0,0,0,0.1)"/>
-      <path id="Posteriore Destro" d="M75,136 C80,132 160,132 160,136 L160,272 C160,278 80,278 75,272 Z" fill="rgba(0,0,0,0.1)"/>
-
-      <!-- Path lato sinistro -->
-      <path id="Anteriore Sinistro" d="M75,136 C80,132 160,132 160,136 L160,272 C160,276 80,276 75,272 Z" fill="rgba(0,0,0,0.1)"/>
-      <path id="Centrale Sinistro" d="M164,136 C170,132 246,132 246,136 L246,236 C246,240 170,240 164,236 Z" fill="rgba(0,0,0,0.1)"/>
-      <path id="Posteriore Sinistro" d="M252,136 C260,130 348,130 348,136 L348,280 C348,285 260,285 252,280 Z" fill="rgba(0,0,0,0.1)"/>
-
       <rect x="0" y="0" width="600" height="30" fill="#fff"/>
-      <text x="300" y="22" text-anchor="middle" font-size="20" font-weight="bold" fill="#000">Lato destro</text>
-
+      <text x="300" y="22" text-anchor="middle" font-size="20" font-weight="bold" fill="#000">Anteriore Destro</text>
+        
+      <image href="https://davide1499.github.io/prova-5/ciao.jpg" x="0" y="400" width="600" height="400"/>
       <rect x="0" y="400" width="600" height="30" fill="#fff"/>
-      <text x="300" y="422" text-anchor="middle" font-size="20" font-weight="bold" fill="#000">Lato sinistro</text>
+      <text x="300" y="422" text-anchor="middle" font-size="20" font-weight="bold" fill="#000">Anteriore Sinistro</text>
+        
+      <image href="https://davide1499.github.io/prova-5/vanopompa.jpg" x="0" y="800" width="600" height="400"/>
+      <rect x="0" y="800" width="600" height="30" fill="#fff"/>
+      <text x="300" y="822" text-anchor="middle" font-size="20" font-weight="bold" fill="#000">Vano Pompa</text>
+
+      <image href="https://davide1499.github.io/prova-5/cabina.jpg" x="0" y="1200" width="600" height="400"/>
+      <rect x="0" y="1200" width="600" height="30" fill="#fff"/>
+      <text x="300" y="1222" text-anchor="middle" font-size="20" font-weight="bold" fill="#000">Cabina</text>
+
+      <image href="https://davide1499.github.io/prova-5/vanopompa.jpg" x="0" y="1600" width="600" height="400"/>
+      <rect x="0" y="1600" width="600" height="30" fill="#fff"/>
+      <text x="300" y="1622" text-anchor="middle" font-size="20" font-weight="bold" fill="#000">Tetto</text>
     </svg>
+  </div>
+</div>
+
+<!-- Modale scheda tecnica -->
+<div id="modalScheda">
+  <div id="modalSchedaContent">
+    <button id="closeModal">X</button>
+    <h2>Scheda Tecnica Camion VVF</h2>
+
+    <div style="position:relative; text-align:center;">
+      <img id="slideImage" src="https://davide1499.github.io/prova-5/camion.jpg" alt="Camion VVF"/>
+      <button id="prevSlide">❮</button>
+      <button id="nextSlide">❯</button>
+    </div>
+
+    <h3>Modello</h3>
+    <p>IVECO Magirus 4x4, anno 2020, cilindrata 7.800 cc, 320 CV</p>
+
+    <h3>Dimensioni</h3>
+    <ul>
+      <li>Lunghezza: 7,5 m</li>
+      <li>Larghezza: 2,5 m</li>
+      <li>Altezza: 3,2 m</li>
+    </ul>
+
+    <h3>Equipaggiamento</h3>
+    <ul>
+      <li>Pompa da 2000 l/min</li>
+      <li>Serbatoio acqua 3000 L</li>
+      <li>Schiumogeno 200 L</li>
+      <li>Scala telescopica 9 m</li>
+      <li>Motosega Echo e accessori di sicurezza</li>
+    </ul>
+
   </div>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script>
+// --- Dati Checklist ---
 const camionData = {
   "Cabina": ["Autoradio","Paletta Segnaletica","Nastro Segnaletico","Confezione guanti lattice","Fanalino Portatile",
         "Cerca fughe","Rilevatore multigas","Massa grassa x fuga gas","Chiave per ascensore","Tifor con leva",
@@ -108,8 +170,7 @@ const camionData = {
         "Cesoia dielettrica","Guanti dielettrici","Messa a terra con cavo","Valvola di fondo"],
   "Centrale Destro": {
       items: ["3 Manichette alta pressione","7 Manichette UNI 45","Faro + prese elettriche","Prolunga elettrica",
-        "Trapano",
-        "Dischi x flex","Cavetti x batteria"],
+        "Trapano","Dischi x flex","Cavetti x batteria"],
       subcategories: {
           "Cassetta Attrezzi": ["12 Chiavi fisse 6-22 mm","Molettina","2 Dischi x molettina","7 Giraviti italiani","5 Giraviti a croce","Mazzetta","Martello"]
       }
@@ -122,9 +183,11 @@ const camionData = {
         "2 Calzatoie","Olio Miscela","Olio Catena","Cavo x il Tifor","Airbag Shield","Seghetto per vetro","Mazza"],
   "Centrale Sinistro": ["3 Birilli segnaletici","Braga da 2 T","5 Maniglioni","4 Bombole","6 Manichette UNI 70",
         "Disco x flex","Coppia di catene","Giratubi"],
-  "Posteriore Sinistro": ["2 Scappelli","Divaricatore","Cesoia","Puntello idraulico","Centralina barellabile","Motoventilatore"]
+  "Posteriore Sinistro": ["2 Scappelli","Divaricatore","Cesoia","Puntello idraulico","Centralina barellabile","Motoventilatore"],
+  "Vano Pompa": ["2 Scappelli","Divaricatore","Cesoia","Puntello idraulico","Centralina barellabile","Motoventilatore"]
 };
 
+// --- Creazione UI checklist ---
 function createCamionUI(){
   const camionDiv=document.getElementById("camion");
   camionDiv.innerHTML="";
@@ -148,17 +211,14 @@ function createCamionUI(){
       subcategories = camionData[comp].subcategories || {};
     }
 
-    // Creazione elementi principali
     items.forEach(item=>{
-      checklistDiv.appendChild(createChecklistRow(item));
+      checklistDiv.appendChild(createChecklistRow(item, comp));
     });
 
-    // Creazione sottocategorie espandibili
     Object.keys(subcategories).forEach(sub=>{
       const subDiv = document.createElement("div");
       subDiv.className = "subcategory";
 
-      // Titolo con freccina
       const subTitle = document.createElement("h4");
       subTitle.style.cursor = "pointer";
       subTitle.style.display = "flex";
@@ -176,14 +236,12 @@ function createCamionUI(){
 
       subDiv.appendChild(subTitle);
 
-      // Lista inizialmente chiusa
       const subChecklist = document.createElement("div");
       subcategories[sub].forEach(subItem=>{
-        subChecklist.appendChild(createChecklistRow(subItem));
+        subChecklist.appendChild(createChecklistRow(subItem, comp));
       });
       subDiv.appendChild(subChecklist);
 
-      // Click per aprire/chiudere con animazione
       subTitle.addEventListener("click", ()=>{
         const isClosed = !subDiv.classList.contains("open");
         if(isClosed){
@@ -203,7 +261,7 @@ function createCamionUI(){
   });
 }
 
-function createChecklistRow(labelText){
+function createChecklistRow(labelText, compName){
   const row=document.createElement("div");
   row.className="checklist-item";
   const label=document.createElement("span");
@@ -216,11 +274,13 @@ function createChecklistRow(labelText){
     if(pres.checked) ass.checked=false;
     row.classList.toggle('presente', pres.checked);
     row.classList.remove('assente');
+    updateCompartmentStatus(compName);
   });
   ass.addEventListener('change', ()=>{
     if(ass.checked) pres.checked=false;
     row.classList.toggle('assente', ass.checked);
     row.classList.remove('presente');
+    updateCompartmentStatus(compName);
   });
 
   const chkGroup = document.createElement("div");
@@ -258,82 +318,96 @@ function createChecklistRow(labelText){
   return row;
 }
 
-// --- Hotspot e PDF ---
-function createHotspotButtons(){
-  const svg = document.getElementById("camionSVG");
+// --- Bottoni hotspot ---
+function createHotspotButtons() {
   const rightDiv = document.getElementById("right");
-
-  Object.keys(camionData).forEach(comp => {
-    const path = svg.getElementById(comp);
-    if(path){
-      const btn = document.createElement("button");
-      btn.className = "hotspot-btn";
-      btn.dataset.path = comp;
-
-      btn.addEventListener('click', () => {
-        document.querySelectorAll('.checklist').forEach(c => c.style.display='none');
-        const header = Array.from(document.querySelectorAll('.compartimento h3'))
-                            .find(h => h.textContent===comp);
-        if(header){
-          const checklistDiv = header.nextElementSibling;
-          checklistDiv.style.display='block';
-          checklistDiv.classList.remove('focus-blink');
-          void checklistDiv.offsetWidth; 
-          checklistDiv.classList.add('focus-blink');
-          checklistDiv.scrollIntoView({behavior:'smooth', block:'center'});
-        }
-        document.querySelectorAll('.hotspot-btn').forEach(b=>b.classList.remove('blinking'));
-        btn.classList.add('blinking');
-      });
-
-      rightDiv.appendChild(btn);
-      btn._targetPath = path;
-    }
-  });
-
-  updateHotspotPositions();
-  window.addEventListener('resize', updateHotspotPositions);
-}
-
-function updateHotspotPositions(){
   const svg = document.getElementById("camionSVG");
-  const svgRect = svg.getBoundingClientRect();
-  const scaleX = svgRect.width / svg.viewBox.baseVal.width;
-  const scaleY = svgRect.height / svg.viewBox.baseVal.height;
 
-  const btnAnteriore = document.querySelector('.hotspot-btn[data-path="Anteriore Sinistro"]');
-  const btnCentrale  = document.querySelector('.hotspot-btn[data-path="Centrale Sinistro"]');
-  const btnPosteriore= document.querySelector('.hotspot-btn[data-path="Posteriore Sinistro"]');
+  const hotspots = [
+      {name:"Cabina", x:300, y:1340, width:180, height:73},
+      {name:"Anteriore Destro", x:301.5, y:210, width:104, height:146},
+      {name:"Centrale Destro", x:205, y:187, width:79, height:100},
+      {name:"Posteriore Destro", x:116.2, y:205, width:83.5, height:135},
+      {name:"Anteriore Sinistro", x:298, y:610, width:95, height:146},
+      {name:"Centrale Sinistro", x:389.5, y:587, width:77,height:100},
+      {name:"Posteriore Sinistro", x:475.8, y:605, width:83, height:137},
+      {name:"Vano Pompa", x:301, y:1000, width:110, height:163},
+      {name:"Tetto", x:300, y:1800, width:110, height:163}
+  ];
 
-  document.querySelectorAll('.hotspot-btn').forEach(btn => {
-    const bbox = btn._targetPath.getBBox();
-    let x = bbox.x * scaleX;
-    let y = bbox.y * scaleY;
-    let width = bbox.width * scaleX;
-    let height = bbox.height * scaleY;
+  rightDiv.querySelectorAll(".hotspot-btn").forEach(b => b.remove());
 
-    if(btn.dataset.path.includes("Sinistro")){
-      x += svgRect.width * 0.3; 
-      y += 400 * scaleY;
-      if(btn.dataset.path==="Anteriore Sinistro") x-=5;
-      if(btn.dataset.path==="Centrale Sinistro") x+=2;
-    }
+  hotspots.forEach(h => {
+    const btn = document.createElement("button");
+    btn.className = "hotspot-btn blinking";
+    btn.setAttribute("data-comp", h.name); // attributo
+    btn.textContent = ""; // nessun testo
 
-    if(btn===btnAnteriore){
-      width = btnPosteriore._targetPath.getBBox().width*scaleX;
-      height = btnPosteriore._targetPath.getBBox().height*scaleY;
-    } else if(btn===btnPosteriore){
-      width = btnAnteriore._targetPath.getBBox().width*scaleX;
-      height = btnAnteriore._targetPath.getBBox().height*scaleY;
-    }
+    const svgWidth = svg.clientWidth;
+    const svgHeight = svg.clientHeight;
+    const scaleX = svgWidth / 600;
+    const scaleY = svgHeight / 2000;
 
-    btn.style.left=`${x}px`;
-    btn.style.top=`${y}px`;
-    btn.style.width=`${width}px`;
-    btn.style.height=`${height}px`;
+    btn.style.width = h.width * scaleX + "px";
+    btn.style.height = h.height * scaleY + "px";
+    btn.style.left = h.x * scaleX + "px";
+    btn.style.top = h.y * scaleY + "px";
+
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.checklist').forEach(c => c.style.display='none');
+      const header = Array.from(document.querySelectorAll('.compartimento h3'))
+                          .find(hd => hd.textContent === h.name);
+      if(header){
+        const checklistDiv = header.nextElementSibling;
+        checklistDiv.style.display='block';
+        checklistDiv.classList.remove('focus-blink');
+        void checklistDiv.offsetWidth; 
+        checklistDiv.classList.add('focus-blink');
+        checklistDiv.scrollIntoView({behavior:'smooth', block:'center'});
+      }
+      document.querySelectorAll('.hotspot-btn').forEach(b=>b.classList.remove('blinking'));
+      btn.classList.add('blinking');
+    });
+
+    rightDiv.appendChild(btn);
   });
 }
 
+// --- Stato completamento ---
+function updateCompartmentStatus(compName){
+  const compartimento = Array.from(document.querySelectorAll('.compartimento'))
+    .find(div => div.querySelector("h3").textContent === compName);
+  if(!compartimento) return;
+
+  const items = compartimento.querySelectorAll(".checklist-item");
+  let allCompiled = true;
+
+  items.forEach(item => {
+    if(!item.classList.contains("presente") && !item.classList.contains("assente")){
+      allCompiled = false;
+    }
+  });
+
+  const title = compartimento.querySelector("h3");
+  const button = document.querySelector(`.hotspot-btn[data-comp='${compName}']`);
+
+  if(allCompiled && items.length > 0){
+    title.classList.add("completed");
+    if(button){
+      button.classList.add("completed");
+      button.classList.remove("blinking");
+    }
+    const checklistDiv = title.nextElementSibling;
+    checklistDiv.style.display = 'none';
+    const subcategories = compartimento.querySelectorAll(".subcategory");
+    subcategories.forEach(sub => sub.classList.remove("open"));
+  } else {
+    title.classList.remove("completed");
+    if(button) button.classList.remove("completed");
+  }
+}
+
+// --- Esporta PDF ---
 function exportPDF(){
   const scelta = prompt(
     "Scegli opzione di esportazione:\n" +
@@ -390,7 +464,7 @@ function exportPDF(){
 
     doc.setFont("helvetica", "normal");
 
-    let alternate = false; // per righe alternate
+    let alternate = false; // righe alternate
     items.forEach(item => {
       const isPresente = item.classList.contains("presente");
       const isAssente = item.classList.contains("assente");
@@ -401,18 +475,18 @@ function exportPDF(){
 
         // Colore riga
         if(isAssente){
-          doc.setFillColor(255, 230, 180); // giallo chiaro
+          doc.setFillColor(255, 230, 180);
         } else if(isPresente){
-          doc.setFillColor(200, 255, 200); // verde chiaro
+          doc.setFillColor(200, 255, 200);
         } else {
-          doc.setFillColor(alternate ? 240 : 255); // righe alternate neutre
+          doc.setFillColor(alternate ? 240 : 255);
         }
         doc.rect(leftMargin, yOffset - 6, tableWidth, lineHeight, "F");
 
         // Bordo cella
         doc.setDrawColor(180);
-        doc.rect(leftMargin, yOffset - 6, col1Width, lineHeight); // colonna oggetto
-        doc.rect(leftMargin + col1Width, yOffset - 6, col2Width, lineHeight); // colonna stato
+        doc.rect(leftMargin, yOffset - 6, col1Width, lineHeight);
+        doc.rect(leftMargin + col1Width, yOffset - 6, col2Width, lineHeight);
 
         // Testo
         doc.setTextColor(0);
@@ -446,9 +520,42 @@ function exportPDF(){
 
 document.getElementById("exportPDF").addEventListener("click", exportPDF);
 
+// --- Scheda Tecnica ---
+const btnScheda = document.getElementById("schedaTecnica");
+const modal = document.getElementById("modalScheda");
+const closeBtn = document.getElementById("closeModal");
+const slideImage = document.getElementById("slideImage");
+const prevSlide = document.getElementById("prevSlide");
+const nextSlide = document.getElementById("nextSlide");
+
+const immaginiCamion = [
+  "https://davide1499.github.io/prova-5/camion.jpg",
+  "https://davide1499.github.io/prova-5/cabina.jpg",
+  "https://davide1499.github.io/prova-5/vanopompa.jpg"
+];
+let currentSlide = 0;
+
+btnScheda.addEventListener("click", () => {
+  modal.style.display = "flex";
+  showSlide(currentSlide);
+});
+closeBtn.addEventListener("click", () => modal.style.display="none");
+modal.addEventListener("click", e=>{if(e.target===modal) modal.style.display="none";});
+
+function showSlide(index){
+  if(index<0) index=immaginiCamion.length-1;
+  if(index>=immaginiCamion.length) index=0;
+  currentSlide=index;
+  slideImage.src=immaginiCamion[currentSlide];
+}
+
+prevSlide.addEventListener("click", ()=>showSlide(currentSlide-1));
+nextSlide.addEventListener("click", ()=>showSlide(currentSlide+1));
+
+// --- Inizializzazione ---
 createCamionUI();
 createHotspotButtons();
 </script>
 
 </body>
-</html>  
+</html>
