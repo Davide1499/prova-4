@@ -475,11 +475,16 @@ noteInput.style.padding = "8px";
 noteInput.style.boxShadow = "0 4px 12px rgba(0,0,0,0.3)";
 
 
-  noteIconWrapper.addEventListener("click", (e) => {
+noteIconWrapper.addEventListener("click", (e) => {
+    // Rimuove eventuali evidenziazioni precedenti
+    document.querySelectorAll(".checklist-item.focus-selected")
+            .forEach(el => el.classList.remove("focus-selected"));
+
     noteInput.style.display = noteInput.style.display === "none" ? "block" : "none";
     if(noteInput.style.display === "block") noteInput.focus();
     e.stopPropagation();
-  });
+});
+
 
   document.addEventListener("click", (e) => {
     if (!noteContainer.contains(e.target)) {
