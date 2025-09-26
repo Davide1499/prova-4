@@ -10,19 +10,14 @@
   outline: 3px solid #2196F3;
   background-color: rgba(33,150,243,0.2);
   border-radius: 6px;
-  transition: background-color 1s, outline 1s; /* dissolvenza dolce */
+  transition: background-color 1s, outline 1s; 
 }
 
-.fade-out {
-  background-color: transparent !important;
-  outline: 0 !important;
-}
-
+.fade-out { background-color: transparent !important; outline: 0 !important; }
 
 body { font-family: Arial, sans-serif; background: #f4f4f4; margin:0; padding:18px; color:#222; }
 h1 { text-align:center; margin-bottom:14px; }
 #layout { display:flex; gap:18px; flex-wrap:wrap; }
-    
 #left { flex:1; background:#fff; padding:14px; border-radius:6px; box-shadow:0 1px 4px rgba(0,0,0,0.06); }
 #right { flex:1; min-width:300px; position:relative; }
 svg { width:100%; height:auto; display:block; border:1px solid #ccc; border-radius:6px; }
@@ -103,51 +98,29 @@ label { margin-right:10px; cursor:pointer; }
 #nextSlide { right:0; }
 </style>
 </head>
+
 <body>
 
 <h1>Checklist Eurocity</h1>
 
 <div id="layout">
-<div id="left">
-
-<!-- Contenitore centrale -->
-<div style="display:flex; flex-direction:column; align-items:center; gap:10px; margin-bottom:20px; width:100%;">
-
-  <!-- Contenitore pulsanti + barra -->
-  <div style="display:flex; flex-direction:column; gap:10px; width:100%; max-width:320px;">
-
-    <!-- Pulsanti -->
-    <div style="display:flex; gap:10px; width:100%;">
-      <button id="exportPDF" style="flex:1; padding:10px; font-size:16px; background:#2196F3; color:#fff; border:none; border-radius:6px; cursor:pointer;">
-        Esporta PDF
-      </button>
-      <button id="schedaTecnica" style="flex:1; padding:10px; font-size:16px; background:#FF9800; color:#fff; border:none; border-radius:6px; cursor:pointer;">
-        Scheda Tecnica
-      </button>
+  <div id="left">
+    <div style="display:flex; flex-direction:column; align-items:center; gap:10px; margin-bottom:20px; width:100%;">
+      <div style="display:flex; flex-direction:column; gap:10px; width:100%; max-width:320px;">
+        <div style="display:flex; gap:10px; width:100%;">
+          <button id="exportPDF" style="flex:1; padding:10px; font-size:16px;">Esporta PDF</button>
+          <button id="schedaTecnica" style="flex:1; padding:10px; font-size:16px;">Scheda Tecnica</button>
+        </div>
+        <div style="position:relative; width:100%;">
+          <input type="text" id="searchInput" placeholder="Cerca elemento..." style="width:100%; padding:8px 10px; border-radius:6px; border:2px solid #2196F3; font-size:14px;">
+          <ul id="searchSuggestions" style="position:absolute; top:100%; left:0; right:0; background:#fff; border:1px solid #2196F3; border-radius:6px; max-height:150px; overflow:auto; list-style:none; margin:0; padding:0; display:none; z-index:10;"></ul>
+        </div>
+      </div>
     </div>
 
-    <!-- Barra di ricerca -->
-    <div style="position:relative; width:100%;">
-      <input type="text" 
-             id="searchInput" 
-             placeholder="Cerca elemento..." 
-             style="width:100%; padding:8px 10px; border-radius:6px; border:2px solid #2196F3; font-size:14px;">
-      <ul id="searchSuggestions" 
-          style="position:absolute; top:100%; left:0; right:0; background:#fff; border:1px solid #2196F3; border-radius:6px; max-height:150px; overflow:auto; list-style:none; margin:0; padding:0; display:none; z-index:10;">
-      </ul>
-    </div>
-
+    <div id="camion"></div>
   </div>
 
-</div>
-
-
-
-  <div id="camion"></div>
-</div>
-
-
-  </div>
   <div id="right">
     <svg id="camionSVG" viewBox="0 0 600 2000">
       <image href="https://davide1499.github.io/prova-5/camion.jpg" x="0" y="0" width="600" height="400"/>
@@ -173,64 +146,142 @@ label { margin-right:10px; cursor:pointer; }
   </div>
 
 
-<!-- Modale scheda tecnica -->
-<div id="modalScheda">
-  <div id="modalSchedaContent">
-    <button id="closeModal">X</button>
-  <h2 style="text-align: center;">IVECO EUROCITY</h2>
-
+<div id="modalScheda" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); justify-content:center; align-items:center; z-index:1000;">
+  <div id="modalSchedaContent" style="background:#fff; border-radius:8px; max-width:800px; width:90%; max-height:90%; overflow:auto; padding:20px; position:relative; display:flex; flex-direction:column; gap:15px;">
+    <button id="closeModal" style="position:absolute; top:10px; right:10px; background:#f44336; color:#fff; border:none; border-radius:50%; width:30px; height:30px; cursor:pointer; font-weight:bold;">X</button>
+    <h2 style="text-align:center;">IVECO EUROCITY</h2>
     <div style="position:relative; text-align:center;">
       <img id="slideImage" src="https://davide1499.github.io/prova-5/camion.jpg" alt="Camion VVF"/>
       <button id="prevSlide">❮</button>
       <button id="nextSlide">❯</button>
     </div>
-
     <h3>Modello</h3>
     <p>IVECO eurocity, anno 2000, cilindrata 5.860 cc, 207 CV</p>
-
     <h3>Dimensioni</h3>
-    <ul>
-      <li>Lunghezza: 7,5 m</li>
-      <li>Larghezza: 2,5 m</li>
-      <li>Altezza: 3,2 m</li>
-    </ul>
-
+    <ul><li>Lunghezza: 7,5 m</li><li>Larghezza: 2,5 m</li><li>Altezza: 3,2 m</li></ul>
     <h3>Equipaggiamento</h3>
-    <ul>
-      <li>Pompa da 1200 l/min</li>
-      <li>Serbatoio acqua 1600 L</li>
-    </ul>
+    <ul><li>Pompa da 1200 l/min</li><li>Serbatoio acqua 1600 L</li></ul>
+  </div>
+</div>
 
+<div id="modalFoto" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); justify-content:center; align-items:center; z-index:1000;">
+  <div style="position:relative; background:#fff; padding:10px; border-radius:6px; max-width:90%; max-height:90%;">
+    <button id="closeFoto" style="position:absolute; top:5px; right:5px; font-size:16px;">X</button>
+    <img id="fotoGrande" src="https://via.placeholder.com/600x400?text=Seleziona+foto" style="max-width:100%; max-height:80vh; display:block; margin:0 auto;">
   </div>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script>
-// --- Dati Checklist ---
+  
+  
+  
 const camionData = {
-  "Cabina": ["Autoradio","Paletta Segnaletica","Nastro Segnaletico","Confezione guanti lattice","Fanalino Portatile",
-        "Cerca fughe","Rilevatore multigas","Massa grassa x fuga gas","Chiave per ascensore","Tifor con leva",
-        "2 Tute calabroni","Spray x calabroni","Segaccio","Piccone","Ascia grande","Cassetta attrezzi"],
-  "Anteriore Destro": ["Pompa sommersa","Gruppo elettrogeno","4 Tubi aspirazione","3 Piedi","2 Fanalino portatile",
-        "Cesoia dielettrica","Guanti dielettrici","Messa a terra con cavo","Valvola di fondo"],
+
+  "Cabina": [
+    { label: "Autoradio", foto: "https://davide1499.github.io/prova-5/camion.jpg" },
+    { label: "Paletta Segnaletica", foto: "https://davide1499.github.io/prova-5/paletta.jpg" },
+    { label: "Fanalino Portatile", foto: "https://davide1499.github.io/prova-5/cabina.jpg" }
+  ],
+  "Anteriore Destro": [
+    { label: "Pompa sommersa", foto: "https://davide1499.github.io/prova-5/ciao.jpg" },
+    { label: "Gruppo elettrogeno", },
+    { label: "4 Tubi aspirazione",  },
+    { label: "3 Piedi", },
+    { label: "2 Fanalino portatile",  },
+    { label: "Cesoia dielettrica" },
+    { label: "Guanti dielettrici" },
+    { label: "Messa a terra con cavo" },
+    { label: "Valvola di fondo" }
+  ],
   "Centrale Destro": {
-      items: ["3 Manichette alta pressione","7 Manichette UNI 45","Faro + prese elettriche","Prolunga elettrica",
-        "Trapano","Dischi x flex","Cavetti x batteria"],
-      subcategories: {
-          "Cassetta Attrezzi": ["12 Chiavi fisse 6-22 mm","Molettina","2 Dischi x molettina","7 Giraviti italiani","5 Giraviti a croce","Mazzetta","Martello"]
-      }
+    items: [
+      { label: "3 Manichette alta pressione" },
+      { label: "7 Manichette UNI 45" },
+      { label: "Faro + prese elettriche" },
+      { label: "Prolunga elettrica" },
+      { label: "Trapano" },
+      { label: "Dischi x flex" },
+      { label: "Cavetti x batteria" }
+    ],
+    subcategories: {
+      "Cassetta Attrezzi": [
+        { label: "12 Chiavi fisse 6-22 mm" },
+        { label: "Molettina" },
+        { label: "2 Dischi x molettina" },
+        { label: "7 Giraviti italiani" },
+        { label: "5 Giraviti a croce" },
+        { label: "Mazzetta" },
+        { label: "Martello" }
+      ]
+    }
   },
-  "Posteriore Destro": ["Premiscelatore di linea","Divisore 70/45","Doppia femmina 70","Doppio maschio 70","Doppia femmina 45",
-        "Doppio maschio 45","Riduttore 70/45","Diffusore 70/70","Chiave stringi tubi","Lancia americana da 45",
-        "2 Lance da 70","2 Lance da 45","Tanica di schiumogeno","2 Tubi pesca schiumogeno"],
-  "Anteriore Sinistro": ["Motosega Echo","Mototroncatore Echo","Estintore a polvere Kg 6","Estintore CO2 Kg 5",
-        "Seghetto","Tanica Metallo","2 Cuscini di sollevamento","Badile","Cesoia x Metallo",
-        "2 Calzatoie","Olio Miscela","Olio Catena","Cavo x il Tifor","Airbag Shield","Seghetto per vetro","Mazza"],
-  "Centrale Sinistro": ["3 Birilli segnaletici","Braga da 2 T","5 Maniglioni","4 Bombole","6 Manichette UNI 70",
-        "Disco x flex","Coppia di catene","Giratubi"],
-  "Posteriore Sinistro": ["2 Scappelli","Divaricatore","Cesoia","Puntello idraulico","Centralina barellabile","Motoventilatore"],
-  "Vano Pompa": ["2 Scappelli","Divaricatore","Cesoia","Puntello idraulico","Centralina barellabile","Motoventilatore"]
+  "Posteriore Destro": [
+    { label: "Premiscelatore di linea" },
+    { label: "Divisore 70/45" },
+    { label: "Doppia femmina 70" },
+    { label: "Doppio maschio 70" },
+    { label: "Doppia femmina 45" },
+    { label: "Doppio maschio 45" },
+    { label: "Riduttore 70/45" },
+    { label: "Diffusore 70/70" },
+    { label: "Chiave stringi tubi" },
+    { label: "Lancia americana da 45" },
+    { label: "2 Lance da 70" },
+    { label: "2 Lance da 45" },
+    { label: "Tanica di schiumogeno" },
+    { label: "2 Tubi pesca schiumogeno" }
+  ],
+  "Anteriore Sinistro": [
+    { label: "Motosega Echo", foto: "https://davide1499.github.io/prova-5/motosega.jpg" },
+    { label: "Mototroncatore Echo" },
+    { label: "Estintore a polvere Kg 6", foto: "https://davide1499.github.io/prova-5/ext_polvere.jpg" },
+    { label: "Estintore CO2 Kg 5" },
+    { label: "Seghetto" },
+    { label: "Tanica Metallo" },
+    { label: "2 Cuscini di sollevamento" },
+    { label: "Badile" },
+    { label: "Cesoia x Metallo" },
+    { label: "2 Calzatoie" },
+    { label: "Olio Miscela" },
+    { label: "Olio Catena" },
+    { label: "Cavo x il Tifor" },
+    { label: "Airbag Shield" },
+    { label: "Seghetto per vetro" },
+    { label: "Mazza" }
+  ],
+  "Centrale Sinistro": [
+    { label: "3 Birilli segnaletici" },
+    { label: "Braga da 2 T" },
+    { label: "5 Maniglioni" },
+    { label: "4 Bombole" },
+    { label: "6 Manichette UNI 70" },
+    { label: "Disco x flex" },
+    { label: "Coppia di catene" },
+    { label: "Giratubi" }
+  ],
+  "Posteriore Sinistro": [
+    { label: "2 Scappelli" },
+    { label: "Divaricatore" },
+    { label: "Cesoia" },
+    { label: "Puntello idraulico" },
+    { label: "Centralina barellabile" },
+    { label: "Motoventilatore" }
+  ],
+  "Vano Pompa": [
+    { label: "2 Scappelli" },
+    { label: "Divaricatore" },
+    { label: "Cesoia" },
+    { label: "Puntello idraulico" },
+    { label: "Centralina barellabile" },
+    { label: "Motoventilatore" }
+  ],
+  "Tetto": [
+    { label: "Segnalatori luminosi" },
+    { label: "Antenna radio" }
+  ]
 };
+
 
 // --- Creazione UI checklist ---
 function createCamionUI(){
@@ -306,7 +357,7 @@ function createCamionUI(){
   });
 }
   
- function createChecklistRow(labelText, compName, title) {
+function createChecklistRow(itemData, compName, title) {
   const row = document.createElement("div");
   row.className = "checklist-item";
   row.style.display = "flex";
@@ -314,10 +365,33 @@ function createCamionUI(){
   row.style.gap = "6px";
   row.style.position = "relative";
 
- const label = document.createElement("span");
-label.textContent = labelText;
-label.className = "item-label";  // <-- aggiunta
-label.style.flex = "1";
+  // --- Label e foto ---
+  let labelText = typeof itemData === "string" ? itemData : itemData.label;
+  let fotoLink  = typeof itemData === "object" && itemData.foto ? itemData.foto : null;
+
+  const label = document.createElement("span");
+  label.textContent = labelText;
+  label.className = "item-label";
+  label.style.flex = "1";
+
+  const fotoContainer = document.createElement("div");
+  fotoContainer.style.width = "24px";
+  fotoContainer.style.display = "flex";
+  fotoContainer.style.justifyContent = "center";
+  fotoContainer.style.alignItems = "center";
+
+  if (fotoLink) {
+    const fotoIcon = document.createElement("span");
+    fotoIcon.textContent = "📷";
+    fotoIcon.style.cursor = "pointer";
+    fotoIcon.title = "Visualizza foto";
+    fotoIcon.style.fontSize = "16px";
+    fotoIcon.addEventListener("click", () => {
+      document.getElementById("fotoGrande").src = fotoLink;
+      document.getElementById("modalFoto").style.display = "flex";
+    });
+    fotoContainer.appendChild(fotoIcon);
+  }
 
   // --- Checkbox ---
   const pres = document.createElement("input"); pres.type="checkbox";
@@ -360,7 +434,7 @@ label.style.flex = "1";
   chkGroup.appendChild(presContainer);
   chkGroup.appendChild(assContainer);
 
-  // --- Container note ---
+  // --- Note ---
   const noteContainer = document.createElement("div");
   noteContainer.style.position = "relative";
   noteContainer.style.display = "flex";
@@ -385,13 +459,21 @@ label.style.flex = "1";
   const noteInput = document.createElement("textarea");
   noteInput.placeholder = "Scrivi qui le note...";
   noteInput.rows = 2;
-  noteInput.style.position = "absolute";
-  noteInput.style.top = "28px";
-  noteInput.style.left = "0";
-  noteInput.style.width = "200px";
-  noteInput.style.resize = "none";
-  noteInput.style.display = "none";
-  noteInput.style.zIndex = "100";
+noteInput.style.position = "fixed";
+noteInput.style.top = "50%";
+noteInput.style.left = "50%";
+noteInput.style.transform = "translate(-50%, -50%)";
+noteInput.style.width = "300px";
+noteInput.style.height = "150px";
+noteInput.style.resize = "none";
+noteInput.style.display = "none";
+noteInput.style.zIndex = "10000";
+noteInput.style.background = "#fff";
+noteInput.style.border = "2px solid #2196F3";
+noteInput.style.borderRadius = "8px";
+noteInput.style.padding = "8px";
+noteInput.style.boxShadow = "0 4px 12px rgba(0,0,0,0.3)";
+
 
   noteIconWrapper.addEventListener("click", (e) => {
     noteInput.style.display = noteInput.style.display === "none" ? "block" : "none";
@@ -405,17 +487,14 @@ label.style.flex = "1";
     }
   });
 
-  // Evidenziare bordo arancione se c'è nota
   noteInput.addEventListener("input", () => {
     const hasNote = noteInput.value.trim() !== "";
     noteIconWrapper.style.border = hasNote ? "2px solid #FF9800" : "2px solid transparent";
 
-    // Badge nel titolo principale del compartimento
     if (title) {
       let mainBadge = title.querySelector(".note-badge");
       const allNotes = title.closest(".compartimento").querySelectorAll(".checklist-item textarea");
       const anyNote = Array.from(allNotes).some(t => t.value.trim() !== "");
-
       if (anyNote && !mainBadge) {
         mainBadge = document.createElement("span");
         mainBadge.className = "note-badge";
@@ -432,12 +511,15 @@ label.style.flex = "1";
   noteContainer.appendChild(noteIconWrapper);
   noteContainer.appendChild(noteInput);
 
-  row.appendChild(noteContainer);
+  // --- Composizione riga ---
+  row.appendChild(fotoContainer);
   row.appendChild(label);
   row.appendChild(chkGroup);
+  row.appendChild(noteContainer);
 
   return row;
 }
+
 
 
 
@@ -496,6 +578,26 @@ function createHotspotButtons() {
     rightDiv.appendChild(btn);
   });
 }
+// --- Modale foto ---
+const modalFoto = document.getElementById("modalFoto");
+const closeFoto = document.getElementById("closeFoto");
+
+closeFoto.addEventListener("click", () => {
+  modalFoto.style.display = "none";
+});
+
+modalFoto.addEventListener("click", (e) => {
+  if(e.target === modalFoto) {
+    modalFoto.style.display = "none";
+  }
+});
+
+const lati = {
+  "Destro": ["Anteriore Destro", "Centrale Destro", "Posteriore Destro"],
+  "Sinistro": ["Anteriore Sinistro", "Centrale Sinistro", "Posteriore Sinistro"],
+  "Posteriore": ["Vano Posteriore 1", "Vano Posteriore 2"],
+  "Tetto": ["Vano Pompa"]
+};
 
 function updateCompartmentStatus(compName){
   const compartimento = Array.from(document.querySelectorAll('.compartimento'))
@@ -513,10 +615,6 @@ function updateCompartmentStatus(compName){
 
   const title = compartimento.querySelector("h3");
   const buttons = document.querySelectorAll(`.hotspot-btn[data-comp='${compName}']`);
-  
-  // SVG text (assumiamo uno per compartimento)
-  const svgText = Array.from(document.querySelectorAll('#camionSVG text'))
-    .find(t => t.textContent === compName);
 
   if(allCompiled && items.length > 0){
     title.classList.add("completed");
@@ -526,11 +624,7 @@ function updateCompartmentStatus(compName){
       btn.classList.remove("blinking");
     });
 
-    if(svgText){
-      svgText.previousElementSibling.setAttribute("fill", "#4CAF50"); // rettangolo dietro testo
-      svgText.setAttribute("fill", "#fff"); // testo bianco sopra
-    }
-
+    // --- CHIUDE LA TENDINA ---
     const checklistDiv = title.nextElementSibling;
     checklistDiv.style.display = 'none';
     const subcategories = compartimento.querySelectorAll(".subcategory");
@@ -540,13 +634,36 @@ function updateCompartmentStatus(compName){
     title.classList.remove("completed");
 
     buttons.forEach(btn => btn.classList.remove("completed"));
+  }
 
-    if(svgText){
-      svgText.previousElementSibling.setAttribute("fill", "#fff"); // rettangolo bianco
-      svgText.setAttribute("fill", "#000"); // testo nero
+  // --- Determina lato del compartimento ---
+  const lato = Object.values(lati).find(arr => arr.includes(compName));
+  if(!lato) return;
+
+  const latoCompleted = lato.every(c => {
+    const div = Array.from(document.querySelectorAll('.compartimento'))
+                     .find(d => d.querySelector("h3").textContent === c);
+    if(!div) return false;
+    const items = div.querySelectorAll(".checklist-item");
+    return Array.from(items).every(i => i.classList.contains("presente") || i.classList.contains("assente"));
+  });
+
+  // Aggiorna rettangolo e testo del primo compartimento del lato
+  const mainComp = lato[0];
+  const mainSvgText = Array.from(document.querySelectorAll('#camionSVG text'))
+    .find(t => t.textContent === mainComp);
+
+  if(mainSvgText){
+    if(latoCompleted){
+      mainSvgText.previousElementSibling.setAttribute("fill", "#4CAF50"); // rettangolo verde
+      mainSvgText.setAttribute("fill", "#fff"); // testo bianco
+    } else {
+      mainSvgText.previousElementSibling.setAttribute("fill", "#fff"); // rettangolo bianco
+      mainSvgText.setAttribute("fill", "#000"); // testo nero
     }
   }
 }
+
 
 
 
@@ -746,30 +863,39 @@ searchInput.addEventListener("input", () => {
     return; 
   }
 
-  // Recupera tutti gli items
-  const allItems = [];
-  Object.keys(camionData).forEach(comp => {
-    if(Array.isArray(camionData[comp])){
-      camionData[comp].forEach(item => allItems.push({item, comp}));
-    } else {
-      camionData[comp].items.forEach(item => allItems.push({item, comp}));
-      if(camionData[comp].subcategories) {
-        Object.keys(camionData[comp].subcategories).forEach(sub => {
-          camionData[comp].subcategories[sub].forEach(item => allItems.push({item, comp}));
+const allItems = [];
+Object.keys(camionData).forEach(comp => {
+  if(Array.isArray(camionData[comp])){
+    camionData[comp].forEach(item => {
+      const label = typeof item === "string" ? item : item.label;
+      allItems.push({label, comp});
+    });
+  } else {
+    camionData[comp].items.forEach(item => {
+      const label = typeof item === "string" ? item : item.label;
+      allItems.push({label, comp});
+    });
+    if(camionData[comp].subcategories) {
+      Object.keys(camionData[comp].subcategories).forEach(sub => {
+        camionData[comp].subcategories[sub].forEach(item => {
+          const label = typeof item === "string" ? item : item.label;
+          allItems.push({label, comp});
         });
-      }
+      });
     }
-  });
+  }
+});
 
-  // Filtra solo se le lettere combaciano all'inizio di **una parola**
-  const results = allItems
-    .map(i => {
-      const words = i.item.toLowerCase().split(/\s+/); // split su spazi
-      const matchIndex = words.findIndex(word => word.startsWith(val));
-      return matchIndex !== -1 ? {...i, matchWordIndex: matchIndex} : null;
-    })
-    .filter(i => i) // rimuove null
-    .sort((a,b) => a.matchWordIndex - b.matchWordIndex); // ordina per posizione della parola
+
+const results = allItems
+  .map(i => {
+    const words = i.label.toLowerCase().split(/\s+/);
+    const matchIndex = words.findIndex(word => word.startsWith(val));
+    return matchIndex !== -1 ? {...i, matchWordIndex: matchIndex} : null;
+  })
+  .filter(i => i)
+  .sort((a,b) => a.matchWordIndex - b.matchWordIndex);
+
 
   // Crea suggerimenti
   results.forEach(res => {
@@ -779,15 +905,18 @@ searchInput.addEventListener("input", () => {
     li.style.whiteSpace = "nowrap";
 
     // Evidenzia la parte matchata solo se inizia la parola
-    const words = res.item.split(/\s+/);
+ const words = res.label.split(/\s+/);
+
     const matchWord = words[res.matchWordIndex];
     words[res.matchWordIndex] = `<strong>${matchWord.substring(0, val.length)}</strong>${matchWord.substring(val.length)}`;
-    li.innerHTML = words.join(" ") + ` (${res.comp})`;
+li.innerHTML = words.join(" ") + ` (${res.comp})`;
+
 
     li.addEventListener("click", () => {
       searchSuggestions.style.display = "none";
       searchInput.value = "";
-      scrollToItem(res.item, res.comp);
+    scrollToItem(res.label, res.comp);
+
     });
 
     searchSuggestions.appendChild(li);
@@ -856,6 +985,6 @@ window.addEventListener("beforeunload", (e) => {
 });
 
 </script>
-
+</div>
 </body>
 </html>
