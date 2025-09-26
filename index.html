@@ -5,6 +5,20 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Checklist Aps</title>
 <style>
+  /* Evidenziazione permanente dall'input di ricerca */
+.focus-selected {
+  outline: 3px solid #2196F3;
+  background-color: rgba(33,150,243,0.2);
+  border-radius: 6px;
+  transition: background-color 1s, outline 1s; /* dissolvenza dolce */
+}
+
+.fade-out {
+  background-color: transparent !important;
+  outline: 0 !important;
+}
+
+
 body { font-family: Arial, sans-serif; background: #f4f4f4; margin:0; padding:18px; color:#222; }
 h1 { text-align:center; margin-bottom:14px; }
 #layout { display:flex; gap:18px; flex-wrap:wrap; }
@@ -91,7 +105,7 @@ label { margin-right:10px; cursor:pointer; }
 </head>
 <body>
 
-<h1>Checklist Camion — PDF Avanzato</h1>
+<h1>Checklist Eurocity</h1>
 
 <div id="layout">
 <div id="left">
@@ -117,7 +131,7 @@ label { margin-right:10px; cursor:pointer; }
       <input type="text" 
              id="searchInput" 
              placeholder="Cerca elemento..." 
-             style="width:100%; padding:8px 10px; border-radius:6px; border:2px solid #2196F3; font-size:14px; outline:none;">
+             style="width:100%; padding:8px 10px; border-radius:6px; border:2px solid #2196F3; font-size:14px;">
       <ul id="searchSuggestions" 
           style="position:absolute; top:100%; left:0; right:0; background:#fff; border:1px solid #2196F3; border-radius:6px; max-height:150px; overflow:auto; list-style:none; margin:0; padding:0; display:none; z-index:10;">
       </ul>
@@ -163,7 +177,7 @@ label { margin-right:10px; cursor:pointer; }
 <div id="modalScheda">
   <div id="modalSchedaContent">
     <button id="closeModal">X</button>
-    <h2>Scheda Tecnica Camion VVF</h2>
+  <h2 style="text-align: center;">IVECO EUROCITY</h2>
 
     <div style="position:relative; text-align:center;">
       <img id="slideImage" src="https://davide1499.github.io/prova-5/camion.jpg" alt="Camion VVF"/>
@@ -725,13 +739,14 @@ nextSlide.addEventListener("click", ()=>showSlide(currentSlide+1));
 const searchSuggestions = document.getElementById("searchSuggestions");
 
 searchInput.addEventListener("input", () => {
-  const val = searchInput.value.toLowerCase();
+  const val = searchInput.value.trim().toLowerCase();
   searchSuggestions.innerHTML = "";
-  if(val === "") { 
+  if (!val) { 
     searchSuggestions.style.display = "none"; 
     return; 
   }
 
+  // Recupera tutti gli items
   const allItems = [];
   Object.keys(camionData).forEach(comp => {
     if(Array.isArray(camionData[comp])){
@@ -746,22 +761,41 @@ searchInput.addEventListener("input", () => {
     }
   });
 
-  const results = allItems.filter(i => i.item.toLowerCase().includes(val));
+  // Filtra solo se le lettere combaciano all'inizio di **una parola**
+  const results = allItems
+    .map(i => {
+      const words = i.item.toLowerCase().split(/\s+/); // split su spazi
+      const matchIndex = words.findIndex(word => word.startsWith(val));
+      return matchIndex !== -1 ? {...i, matchWordIndex: matchIndex} : null;
+    })
+    .filter(i => i) // rimuove null
+    .sort((a,b) => a.matchWordIndex - b.matchWordIndex); // ordina per posizione della parola
+
+  // Crea suggerimenti
   results.forEach(res => {
     const li = document.createElement("li");
-    li.textContent = `${res.item} (${res.comp})`;
     li.style.padding = "4px 6px";
     li.style.cursor = "pointer";
+    li.style.whiteSpace = "nowrap";
+
+    // Evidenzia la parte matchata solo se inizia la parola
+    const words = res.item.split(/\s+/);
+    const matchWord = words[res.matchWordIndex];
+    words[res.matchWordIndex] = `<strong>${matchWord.substring(0, val.length)}</strong>${matchWord.substring(val.length)}`;
+    li.innerHTML = words.join(" ") + ` (${res.comp})`;
+
     li.addEventListener("click", () => {
       searchSuggestions.style.display = "none";
       searchInput.value = "";
       scrollToItem(res.item, res.comp);
     });
+
     searchSuggestions.appendChild(li);
   });
 
   searchSuggestions.style.display = results.length ? "block" : "none";
 });
+
 
 function scrollToItem(itemName, compName) {
   const header = Array.from(document.querySelectorAll(".compartimento h3"))
@@ -772,13 +806,27 @@ function scrollToItem(itemName, compName) {
   checklist.style.display = "block";
 
   const itemDiv = Array.from(checklist.querySelectorAll(".checklist-item"))
-                       .find(i => i.querySelector("span").textContent === itemName);
+                       .find(i => i.querySelector(".item-label").textContent === itemName);
+
   if(itemDiv){
-    itemDiv.classList.add("focus-blink");
-    setTimeout(()=> itemDiv.classList.remove("focus-blink"), 1000);
-    itemDiv.scrollIntoView({behavior: 'smooth', block: 'center'});
+    // Rimuove eventuali evidenziazioni precedenti
+    document.querySelectorAll(".checklist-item.focus-selected")
+            .forEach(el => el.classList.remove("focus-selected"));
+
+    // Aggiunge evidenziazione
+    itemDiv.classList.add("focus-selected");
+
+    // Scorre fino all'elemento senza cambiare lo zoom
+    itemDiv.scrollIntoView({behavior: "smooth", block: "center"});
+
+    // Rimuove evidenziazione dopo 10 secondi
+    setTimeout(() => {
+      itemDiv.classList.remove("focus-selected");
+    }, 1000); // 10000 ms = 10 secondi
   }
 }
+
+
 
 createCamionUI();
 createHotspotButtons();
