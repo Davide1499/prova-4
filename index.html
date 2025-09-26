@@ -802,6 +802,9 @@ function scrollToItem(itemName, compName) {
                       .find(h => h.textContent === compName);
   if(!header) return;
 
+  // **Chiudi tutte le checklist**
+  document.querySelectorAll('.checklist').forEach(c => c.style.display = 'none');
+
   const checklist = header.nextElementSibling;
   checklist.style.display = "block";
 
@@ -819,17 +822,39 @@ function scrollToItem(itemName, compName) {
     // Scorre fino all'elemento senza cambiare lo zoom
     itemDiv.scrollIntoView({behavior: "smooth", block: "center"});
 
-    // Rimuove evidenziazione dopo 10 secondi
+    // Rimuove evidenziazione dopo 1 secondo
     setTimeout(() => {
       itemDiv.classList.remove("focus-selected");
-    }, 1000); // 10000 ms = 10 secondi
+    }, 2000);
   }
 }
 
 
 
+
 createCamionUI();
 createHotspotButtons();
+  
+  // Funzione che verifica se ci sono modifiche nella checklist
+function checkForChanges() {
+  const items = document.querySelectorAll(".checklist-item");
+  for (let item of items) {
+    const hasPresente = item.classList.contains("presente");
+    const hasAssente = item.classList.contains("assente");
+    const note = item.querySelector("textarea")?.value.trim();
+    if (hasPresente || hasAssente || note) return true;
+  }
+  return false;
+}
+
+// Avviso prima di chiudere o ricaricare la pagina
+window.addEventListener("beforeunload", (e) => {
+  if (checkForChanges()) {
+    e.preventDefault(); // Standard moderno
+    e.returnValue = ""; // Chrome mostra un avviso di default
+  }
+});
+
 </script>
 
 </body>
