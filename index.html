@@ -2,114 +2,96 @@
 <html lang="it">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Checklist Aps</title>
 <style>
-  /* Evidenziazione permanente dall'input di ricerca */
-  .focus-selected {
-    outline: 3px solid #2196F3;
-    background-color: rgba(33,150,243,0.2);
-    border-radius: 6px;
-    transition: background-color 1s, outline 1s;
-  }
+body { font-family: Arial, sans-serif; background: #f4f4f4; margin:0; padding:18px; color:#222; }
+h1 { text-align:center; margin-bottom:14px; }
+#layout { display:flex; gap:18px; flex-wrap:wrap; }
+    
+#left { flex:1; background:#fff; padding:14px; border-radius:6px; box-shadow:0 1px 4px rgba(0,0,0,0.06); }
+#right { flex:1; min-width:300px; position:relative; }
+svg { width:100%; height:auto; display:block; border:1px solid #ccc; border-radius:6px; }
 
-  .fade-out {
-    background-color: transparent !important;
-    outline: 0 !important;
-  }
+.compartimento { border:1px solid #ddd; margin:8px 0; border-radius:6px; overflow:hidden; }
+.compartimento h3 { margin:0; padding:10px; background:#eee; cursor:pointer; transition: background 0.3s; }
+.subcategory { margin-left:20px; border-left:2px dashed #aaa; padding-left:10px; margin-top:6px; }
+.subcategory h4 { margin:0; }
+.checklist { padding:10px; display:none; }
+.checklist-item { display:flex; justify-content:space-between; align-items:center; margin:6px 0; padding:6px; border-radius:4px; }
+.checklist-item.presente { background:#4CAF50; color:#fff; }
+.checklist-item.assente { background:#f44336; color:#fff; }
+label { margin-right:10px; cursor:pointer; }
+#exportPDF, #schedaTecnica { margin-top:10px; padding:8px 12px; cursor:pointer; color:#fff; border:none; border-radius:4px; font-weight:600; }
+#exportPDF { background:#2196F3; }
+#schedaTecnica { background:#FF9800; }
 
-  body { font-family: Arial, sans-serif; background: #f4f4f4; margin:0; padding:18px; color:#222; }
-  h1 { text-align:center; margin-bottom:14px; }
-  #layout { display:flex; gap:18px; flex-wrap:wrap; }
+/* Bottoni fissi */
+.hotspot-btn { 
+  position:absolute; 
+  background:rgba(33,150,243,0.25);
+  border:3px solid #2196F3;
+  border-radius:6px; 
+  cursor:pointer; 
+  font-size:14px;
+  text-align:center;
+  line-height:1.2em;
+  transform: translate(-50%, -50%);
+}
+.blinking { 
+  animation: blink 1s infinite; 
+  border-color:#1976D2 !important; 
+}
+@keyframes blink { 
+  0%,100% {opacity:1;} 
+  50% {opacity:0.4;} 
+}
 
-  #left { flex:1; background:#fff; padding:14px; border-radius:6px; box-shadow:0 1px 4px rgba(0,0,0,0.06); }
-  #right { flex:1; min-width:300px; position:relative; }
-  svg { width:100%; height:auto; display:block; border:1px solid #ccc; border-radius:6px; }
+/* Lampeggio dolce per la checklist con sfumatura finale */
+@keyframes focusBlink {
+  0%   { background-color: transparent; }
+  25%  { background-color: rgba(33,150,243,0.25); }
+ 50%  { background-color: rgba(33,150,243,0.25); }
+  75%  { background-color: rgba(33,150,243,0.15); }
+  100% { background-color: transparent; }
+}
+.focus-blink {
+  animation: focusBlink 1s ease-in-out 1;
+}
 
-  .compartimento { border:1px solid #ddd; margin:8px 0; border-radius:6px; overflow:hidden; }
-  .compartimento h3 { margin:0; padding:10px; background:#eee; cursor:pointer; transition: background 0.3s; }
-  .subcategory { margin-left:20px; border-left:2px dashed #aaa; padding-left:10px; margin-top:6px; }
-  .subcategory h4 { margin:0; }
-  .checklist { padding:10px; display:none; }
-  .checklist-item { display:flex; justify-content:space-between; align-items:center; margin:6px 0; padding:6px; border-radius:4px; }
-  .checklist-item.presente { background:#4CAF50; color:#fff; }
-  .checklist-item.assente { background:#f44336; color:#fff; }
-  label { margin-right:10px; cursor:pointer; }
-  #exportPDF, #schedaTecnica { margin-top:10px; padding:8px 12px; cursor:pointer; color:#fff; border:none; border-radius:4px; font-weight:600; }
-  #exportPDF { background:#2196F3; }
-  #schedaTecnica { background:#FF9800; }
+/* Animazione sottocategorie */
+.subcategory div {
+  overflow: hidden;
+  max-height: 0;
+  transition: max-height 0.4s ease;
+}
+.subcategory.open div {
+  max-height: 1000px;
+}
 
-  /* Bottoni fissi */
-  .hotspot-btn { 
-    position:absolute; 
-    background:rgba(33,150,243,0.25);
-    border:3px solid #2196F3;
-    border-radius:6px; 
-    cursor:pointer; 
-    font-size:14px;
-    text-align:center;
-    line-height:1.2em;
-    transform: translate(-50%, -50%);
-  }
-  .blinking { 
-    animation: blink 1s infinite; 
-    border-color:#1976D2 !important; 
-  }
-  @keyframes blink { 
-    0%,100% {opacity:1;} 
-    50% {opacity:0.4;} 
-  }
+/* Compartimento completato */
+.compartimento h3.completed {
+  background: #4CAF50;
+  color: #fff;
+}
+.hotspot-btn.completed {
+  background: rgba(76, 175, 80, 0.25) !important;
+  border-color: #4CAF50 !important;
+}
 
-  /* Lampeggio dolce per la checklist con sfumatura finale */
-  @keyframes focusBlink {
-    0%   { background-color: transparent; }
-    25%  { background-color: rgba(33,150,243,0.25); }
-    50%  { background-color: rgba(33,150,243,0.25); }
-    75%  { background-color: rgba(33,150,243,0.15); }
-    100% { background-color: transparent; }
-  }
-  .focus-blink {
-    animation: focusBlink 1s ease-in-out 1;
-  }
-
-  /* Animazione sottocategorie */
-  .subcategory div {
-    overflow: hidden;
-    max-height: 0;
-    transition: max-height 0.4s ease;
-  }
-  .subcategory.open div {
-    max-height: 1000px;
-  }
-
-  /* Compartimento completato */
-  .compartimento h3.completed {
-    background: #4CAF50;
-    color: #fff;
-  }
-  .hotspot-btn.completed {
-    background: rgba(76, 175, 80, 0.25) !important;
-    border-color: #4CAF50 !important;
-  }
-
-  /* Modale scheda tecnica */
-  #modalScheda { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); justify-content:center; align-items:center; z-index:1000; }
-  #modalSchedaContent { background:#fff; border-radius:8px; max-width:800px; width:90%; max-height:90%; overflow:auto; padding:20px; position:relative; display:flex; flex-direction:column; gap:15px; }
-  #modalSchedaContent img { width:100%; border-radius:6px; max-height:400px; object-fit:contain; }
-  #closeModal { position:absolute; top:10px; right:10px; background:#f44336; color:#fff; border:none; border-radius:50%; width:30px; height:30px; cursor:pointer; font-weight:bold; }
-  #prevSlide, #nextSlide { position:absolute; top:50%; transform:translateY(-50%); background:rgba(0,0,0,0.5); color:#fff; border:none; font-size:24px; padding:6px 12px; cursor:pointer; }
-  #prevSlide { left:0; }
-  #nextSlide { right:0; }
-
-  /* Blocca zoom Safari aumentando la dimensione del font */
-  input, textarea, select {
-    font-size: 16px;
-  }
+/* Modale scheda tecnica */
+#modalScheda { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); justify-content:center; align-items:center; z-index:1000; }
+#modalSchedaContent { background:#fff; border-radius:8px; max-width:800px; width:90%; max-height:90%; overflow:auto; padding:20px; position:relative; display:flex; flex-direction:column; gap:15px; }
+#modalSchedaContent img { width:100%; border-radius:6px; max-height:400px; object-fit:contain; }
+#closeModal { position:absolute; top:10px; right:10px; background:#f44336; color:#fff; border:none; border-radius:50%; width:30px; height:30px; cursor:pointer; font-weight:bold; }
+#prevSlide, #nextSlide { position:absolute; top:50%; transform:translateY(-50%); background:rgba(0,0,0,0.5); color:#fff; border:none; font-size:24px; padding:6px 12px; cursor:pointer; }
+#prevSlide { left:0; }
+#nextSlide { right:0; }
 </style>
 </head>
 <body>
 
-<h1>Checklist Eurocity</h1>
+<h1>Checklist Camion — PDF Avanzato</h1>
 
 <div id="layout">
 <div id="left">
@@ -135,7 +117,7 @@
       <input type="text" 
              id="searchInput" 
              placeholder="Cerca elemento..." 
-             style="width:100%; padding:8px 10px; border-radius:6px; border:2px solid #2196F3; font-size:14px;">
+             style="width:100%; padding:8px 10px; border-radius:6px; border:2px solid #2196F3; font-size:14px; outline:none;">
       <ul id="searchSuggestions" 
           style="position:absolute; top:100%; left:0; right:0; background:#fff; border:1px solid #2196F3; border-radius:6px; max-height:150px; overflow:auto; list-style:none; margin:0; padding:0; display:none; z-index:10;">
       </ul>
@@ -181,7 +163,7 @@
 <div id="modalScheda">
   <div id="modalSchedaContent">
     <button id="closeModal">X</button>
-  <h2 style="text-align: center;">IVECO EUROCITY</h2>
+    <h2>Scheda Tecnica Camion VVF</h2>
 
     <div style="position:relative; text-align:center;">
       <img id="slideImage" src="https://davide1499.github.io/prova-5/camion.jpg" alt="Camion VVF"/>
@@ -212,29 +194,107 @@
 <script>
 // --- Dati Checklist ---
 const camionData = {
-  "Cabina": ["Autoradio","Paletta Segnaletica","Nastro Segnaletico","Confezione guanti lattice","Fanalino Portatile",
-        "Cerca fughe","Rilevatore multigas","Massa grassa x fuga gas","Chiave per ascensore","Tifor con leva",
-        "2 Tute calabroni","Spray x calabroni","Segaccio","Piccone","Ascia grande","Cassetta attrezzi"],
-  "Anteriore Destro": ["Pompa sommersa","Gruppo elettrogeno","4 Tubi aspirazione","3 Piedi","2 Fanalino portatile",
-        "Cesoia dielettrica","Guanti dielettrici","Messa a terra con cavo","Valvola di fondo"],
+
+  "Cabina": [
+    { label: "Autoradio", foto: "https://davide1499.github.io/prova-5/camion.jpg" },
+    { label: "Paletta Segnaletica" },
+    { label: "Fanalino Portatile", foto: "https://davide1499.github.io/prova-5/cabina.jpg" }
+  ],
+  "Anteriore Destro": [
+    { label: "Pompa sommersa" },
+    { label: "Gruppo elettrogeno" },
+    { label: "4 Tubi aspirazione" },
+    { label: "3 Piedi" },
+    { label: "2 Fanalino portatile" },
+    { label: "Cesoia dielettrica" },
+    { label: "Guanti dielettrici" },
+    { label: "Messa a terra con cavo" },
+    { label: "Valvola di fondo" }
+  ],
   "Centrale Destro": {
-      items: ["3 Manichette alta pressione","7 Manichette UNI 45","Faro + prese elettriche","Prolunga elettrica",
-        "Trapano","Dischi x flex","Cavetti x batteria"],
-      subcategories: {
-          "Cassetta Attrezzi": ["12 Chiavi fisse 6-22 mm","Molettina","2 Dischi x molettina","7 Giraviti italiani","5 Giraviti a croce","Mazzetta","Martello"]
-      }
+    items: [
+      { label: "3 Manichette alta pressione" },
+      { label: "7 Manichette UNI 45" },
+      { label: "Faro + prese elettriche" },
+      { label: "Prolunga elettrica" },
+      { label: "Trapano" },
+      { label: "Dischi x flex" },
+      { label: "Cavetti x batteria" }
+    ],
+    subcategories: {
+      "Cassetta Attrezzi": [
+        { label: "12 Chiavi fisse 6-22 mm" },
+        { label: "Molettina" },
+        { label: "2 Dischi x molettina" },
+        { label: "7 Giraviti italiani" },
+        { label: "5 Giraviti a croce" },
+        { label: "Mazzetta" },
+        { label: "Martello" }
+      ]
+    }
   },
-  "Posteriore Destro": ["Premiscelatore di linea","Divisore 70/45","Doppia femmina 70","Doppio maschio 70","Doppia femmina 45",
-        "Doppio maschio 45","Riduttore 70/45","Diffusore 70/70","Chiave stringi tubi","Lancia americana da 45",
-        "2 Lance da 70","2 Lance da 45","Tanica di schiumogeno","2 Tubi pesca schiumogeno"],
-  "Anteriore Sinistro": ["Motosega Echo","Mototroncatore Echo","Estintore a polvere Kg 6","Estintore CO2 Kg 5",
-        "Seghetto","Tanica Metallo","2 Cuscini di sollevamento","Badile","Cesoia x Metallo",
-        "2 Calzatoie","Olio Miscela","Olio Catena","Cavo x il Tifor","Airbag Shield","Seghetto per vetro","Mazza"],
-  "Centrale Sinistro": ["3 Birilli segnaletici","Braga da 2 T","5 Maniglioni","4 Bombole","6 Manichette UNI 70",
-        "Disco x flex","Coppia di catene","Giratubi"],
-  "Posteriore Sinistro": ["2 Scappelli","Divaricatore","Cesoia","Puntello idraulico","Centralina barellabile","Motoventilatore"],
-  "Vano Pompa": ["2 Scappelli","Divaricatore","Cesoia","Puntello idraulico","Centralina barellabile","Motoventilatore"]
+  "Posteriore Destro": [
+    { label: "Premiscelatore di linea" },
+    { label: "Divisore 70/45" },
+    { label: "Doppia femmina 70" },
+    { label: "Doppio maschio 70" },
+    { label: "Doppia femmina 45" },
+    { label: "Doppio maschio 45" },
+    { label: "Riduttore 70/45" },
+    { label: "Diffusore 70/70" },
+    { label: "Chiave stringi tubi" },
+    { label: "Lancia americana da 45" },
+    { label: "2 Lance da 70" },
+    { label: "2 Lance da 45" },
+    { label: "Tanica di schiumogeno" },
+    { label: "2 Tubi pesca schiumogeno" }
+  ],
+  "Anteriore Sinistro": [
+    { label: "Motosega Echo" },
+    { label: "Mototroncatore Echo" },
+    { label: "Estintore a polvere Kg 6" },
+    { label: "Estintore CO2 Kg 5" },
+    { label: "Seghetto" },
+    { label: "Tanica Metallo" },
+    { label: "2 Cuscini di sollevamento" },
+    { label: "Badile" },
+    { label: "Cesoia x Metallo" },
+    { label: "2 Calzatoie" },
+    { label: "Olio Miscela" },
+    { label: "Olio Catena" },
+    { label: "Cavo x il Tifor" },
+    { label: "Airbag Shield" },
+    { label: "Seghetto per vetro" },
+    { label: "Mazza" }
+  ],
+  "Centrale Sinistro": [
+    { label: "3 Birilli segnaletici" },
+    { label: "Braga da 2 T" },
+    { label: "5 Maniglioni" },
+    { label: "4 Bombole" },
+    { label: "6 Manichette UNI 70" },
+    { label: "Disco x flex" },
+    { label: "Coppia di catene" },
+    { label: "Giratubi" }
+  ],
+  "Posteriore Sinistro": [
+    { label: "2 Scappelli" },
+    { label: "Divaricatore" },
+    { label: "Cesoia" },
+    { label: "Puntello idraulico" },
+    { label: "Centralina barellabile" },
+    { label: "Motoventilatore" }
+  ],
+  "Vano Pompa": [
+    { label: "2 Scappelli" },
+    { label: "Divaricatore" },
+    { label: "Cesoia" },
+    { label: "Puntello idraulico" },
+    { label: "Centralina barellabile" },
+    { label: "Motoventilatore" }
+  ]
 };
+
 
 // --- Creazione UI checklist ---
 function createCamionUI(){
@@ -310,7 +370,7 @@ function createCamionUI(){
   });
 }
   
- function createChecklistRow(labelText, compName, title) {
+ function createChecklistRow(itemData, compName, title) {
   const row = document.createElement("div");
   row.className = "checklist-item";
   row.style.display = "flex";
@@ -318,10 +378,14 @@ function createCamionUI(){
   row.style.gap = "6px";
   row.style.position = "relative";
 
- const label = document.createElement("span");
-label.textContent = labelText;
-label.className = "item-label";  // <-- aggiunta
-label.style.flex = "1";
+  // Se itemData è stringa → trasformo in oggetto
+  let labelText = typeof itemData === "string" ? itemData : itemData.label;
+  let fotoLink  = typeof itemData === "object" && itemData.foto ? itemData.foto : null;
+
+  const label = document.createElement("span");
+  label.textContent = labelText;
+  label.className = "item-label";
+  label.style.flex = "1";
 
   // --- Checkbox ---
   const pres = document.createElement("input"); pres.type="checkbox";
@@ -364,7 +428,21 @@ label.style.flex = "1";
   chkGroup.appendChild(presContainer);
   chkGroup.appendChild(assContainer);
 
-  // --- Container note ---
+  // --- Foto (se c’è link) ---
+  const fotoContainer = document.createElement("div");
+  if (fotoLink) {
+    const fotoIcon = document.createElement("span");
+    fotoIcon.textContent = "📷";
+    fotoIcon.style.cursor = "pointer";
+    fotoIcon.title = "Apri foto";
+    fotoIcon.style.fontSize = "16px";
+    fotoIcon.addEventListener("click", () => {
+      window.open(fotoLink, "_blank");
+    });
+    fotoContainer.appendChild(fotoIcon);
+  }
+
+  // --- Note ---
   const noteContainer = document.createElement("div");
   noteContainer.style.position = "relative";
   noteContainer.style.display = "flex";
@@ -414,7 +492,6 @@ label.style.flex = "1";
     const hasNote = noteInput.value.trim() !== "";
     noteIconWrapper.style.border = hasNote ? "2px solid #FF9800" : "2px solid transparent";
 
-    // Badge nel titolo principale del compartimento
     if (title) {
       let mainBadge = title.querySelector(".note-badge");
       const allNotes = title.closest(".compartimento").querySelectorAll(".checklist-item textarea");
@@ -436,6 +513,8 @@ label.style.flex = "1";
   noteContainer.appendChild(noteIconWrapper);
   noteContainer.appendChild(noteInput);
 
+  // --- Montaggio riga ---
+  row.appendChild(fotoContainer);
   row.appendChild(noteContainer);
   row.appendChild(label);
   row.appendChild(chkGroup);
@@ -743,14 +822,13 @@ nextSlide.addEventListener("click", ()=>showSlide(currentSlide+1));
 const searchSuggestions = document.getElementById("searchSuggestions");
 
 searchInput.addEventListener("input", () => {
-  const val = searchInput.value.trim().toLowerCase();
+  const val = searchInput.value.toLowerCase();
   searchSuggestions.innerHTML = "";
-  if (!val) { 
+  if(val === "") { 
     searchSuggestions.style.display = "none"; 
     return; 
   }
 
-  // Recupera tutti gli items
   const allItems = [];
   Object.keys(camionData).forEach(comp => {
     if(Array.isArray(camionData[comp])){
@@ -765,100 +843,42 @@ searchInput.addEventListener("input", () => {
     }
   });
 
-  // Filtra solo se le lettere combaciano all'inizio di **una parola**
-  const results = allItems
-    .map(i => {
-      const words = i.item.toLowerCase().split(/\s+/); // split su spazi
-      const matchIndex = words.findIndex(word => word.startsWith(val));
-      return matchIndex !== -1 ? {...i, matchWordIndex: matchIndex} : null;
-    })
-    .filter(i => i) // rimuove null
-    .sort((a,b) => a.matchWordIndex - b.matchWordIndex); // ordina per posizione della parola
-
-  // Crea suggerimenti
+  const results = allItems.filter(i => i.item.toLowerCase().includes(val));
   results.forEach(res => {
     const li = document.createElement("li");
+    li.textContent = `${res.item} (${res.comp})`;
     li.style.padding = "4px 6px";
     li.style.cursor = "pointer";
-    li.style.whiteSpace = "nowrap";
-
-    // Evidenzia la parte matchata solo se inizia la parola
-    const words = res.item.split(/\s+/);
-    const matchWord = words[res.matchWordIndex];
-    words[res.matchWordIndex] = `<strong>${matchWord.substring(0, val.length)}</strong>${matchWord.substring(val.length)}`;
-    li.innerHTML = words.join(" ") + ` (${res.comp})`;
-
     li.addEventListener("click", () => {
       searchSuggestions.style.display = "none";
       searchInput.value = "";
       scrollToItem(res.item, res.comp);
     });
-
     searchSuggestions.appendChild(li);
   });
 
   searchSuggestions.style.display = results.length ? "block" : "none";
 });
 
-
 function scrollToItem(itemName, compName) {
   const header = Array.from(document.querySelectorAll(".compartimento h3"))
                       .find(h => h.textContent === compName);
   if(!header) return;
 
-  // **Chiudi tutte le checklist**
-  document.querySelectorAll('.checklist').forEach(c => c.style.display = 'none');
-
   const checklist = header.nextElementSibling;
   checklist.style.display = "block";
 
   const itemDiv = Array.from(checklist.querySelectorAll(".checklist-item"))
-                       .find(i => i.querySelector(".item-label").textContent === itemName);
-
+                       .find(i => i.querySelector("span").textContent === itemName);
   if(itemDiv){
-    // Rimuove eventuali evidenziazioni precedenti
-    document.querySelectorAll(".checklist-item.focus-selected")
-            .forEach(el => el.classList.remove("focus-selected"));
-
-    // Aggiunge evidenziazione
-    itemDiv.classList.add("focus-selected");
-
-    // Scorre fino all'elemento senza cambiare lo zoom
-    itemDiv.scrollIntoView({behavior: "smooth", block: "center"});
-
-    // Rimuove evidenziazione dopo 1 secondo
-    setTimeout(() => {
-      itemDiv.classList.remove("focus-selected");
-    }, 2000);
+    itemDiv.classList.add("focus-blink");
+    setTimeout(()=> itemDiv.classList.remove("focus-blink"), 1000);
+    itemDiv.scrollIntoView({behavior: 'smooth', block: 'center'});
   }
 }
-
-
-
 
 createCamionUI();
 createHotspotButtons();
-  
-  // Funzione che verifica se ci sono modifiche nella checklist
-function checkForChanges() {
-  const items = document.querySelectorAll(".checklist-item");
-  for (let item of items) {
-    const hasPresente = item.classList.contains("presente");
-    const hasAssente = item.classList.contains("assente");
-    const note = item.querySelector("textarea")?.value.trim();
-    if (hasPresente || hasAssente || note) return true;
-  }
-  return false;
-}
-
-// Avviso prima di chiudere o ricaricare la pagina
-window.addEventListener("beforeunload", (e) => {
-  if (checkForChanges()) {
-    e.preventDefault(); // Standard moderno
-    e.returnValue = ""; // Chrome mostra un avviso di default
-  }
-});
-
 </script>
 
 </body>
