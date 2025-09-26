@@ -94,16 +94,45 @@ label { margin-right:10px; cursor:pointer; }
 <h1>Checklist Camion — PDF Avanzato</h1>
 
 <div id="layout">
-  <div id="left">
-    <h2>Checklist</h2>
-    <div style="position:relative; margin-bottom:10px;">
-  <input type="text" id="searchInput" placeholder="Cerca elemento..." style="width:100%; padding:6px; border-radius:4px; border:1px solid #ccc;">
-  <ul id="searchSuggestions" style="position:absolute; top:100%; left:0; right:0; background:#fff; border:1px solid #ccc; border-radius:4px; max-height:150px; overflow:auto; list-style:none; margin:0; padding:0; display:none; z-index:10;"></ul>
+<div id="left">
+
+<!-- Contenitore centrale -->
+<div style="display:flex; flex-direction:column; align-items:center; gap:10px; margin-bottom:20px; width:100%;">
+
+  <!-- Contenitore pulsanti + barra -->
+  <div style="display:flex; flex-direction:column; gap:10px; width:100%; max-width:320px;">
+
+    <!-- Pulsanti -->
+    <div style="display:flex; gap:10px; width:100%;">
+      <button id="exportPDF" style="flex:1; padding:10px; font-size:16px; background:#2196F3; color:#fff; border:none; border-radius:6px; cursor:pointer;">
+        Esporta PDF
+      </button>
+      <button id="schedaTecnica" style="flex:1; padding:10px; font-size:16px; background:#FF9800; color:#fff; border:none; border-radius:6px; cursor:pointer;">
+        Scheda Tecnica
+      </button>
+    </div>
+
+    <!-- Barra di ricerca -->
+    <div style="position:relative; width:100%;">
+      <input type="text" 
+             id="searchInput" 
+             placeholder="Cerca elemento..." 
+             style="width:100%; padding:8px 10px; border-radius:6px; border:2px solid #2196F3; font-size:14px; outline:none;">
+      <ul id="searchSuggestions" 
+          style="position:absolute; top:100%; left:0; right:0; background:#fff; border:1px solid #2196F3; border-radius:6px; max-height:150px; overflow:auto; list-style:none; margin:0; padding:0; display:none; z-index:10;">
+      </ul>
+    </div>
+
+  </div>
+
 </div>
 
-    <div id="camion"></div>
-    <button id="exportPDF">Esporta PDF</button>
-    <button id="schedaTecnica">Scheda Tecnica</button>
+
+
+  <div id="camion"></div>
+</div>
+
+
   </div>
   <div id="right">
     <svg id="camionSVG" viewBox="0 0 600 2000">
@@ -128,7 +157,7 @@ label { margin-right:10px; cursor:pointer; }
       <text x="300" y="1622" text-anchor="middle" font-size="20" font-weight="bold" fill="#000">Tetto</text>
     </svg>
   </div>
-</div>
+
 
 <!-- Modale scheda tecnica -->
 <div id="modalScheda">
@@ -262,23 +291,32 @@ function createCamionUI(){
     camionDiv.appendChild(div);
   });
 }
+  
+ function createChecklistRow(labelText, compName, title) {
+  const row = document.createElement("div");
+  row.className = "checklist-item";
+  row.style.display = "flex";
+  row.style.alignItems = "center";
+  row.style.gap = "6px";
+  row.style.position = "relative";
 
-function createChecklistRow(labelText, compName){
-  const row=document.createElement("div");
-  row.className="checklist-item";
-  const label=document.createElement("span");
-  label.textContent=labelText;
+ const label = document.createElement("span");
+label.textContent = labelText;
+label.className = "item-label";  // <-- aggiunta
+label.style.flex = "1";
 
+  // --- Checkbox ---
   const pres = document.createElement("input"); pres.type="checkbox";
   const ass = document.createElement("input"); ass.type="checkbox";
 
-  pres.addEventListener('change', ()=>{
+  pres.addEventListener('change', () => {
     if(pres.checked) ass.checked=false;
     row.classList.toggle('presente', pres.checked);
     row.classList.remove('assente');
     updateCompartmentStatus(compName);
   });
-  ass.addEventListener('change', ()=>{
+
+  ass.addEventListener('change', () => {
     if(ass.checked) pres.checked=false;
     row.classList.toggle('assente', ass.checked);
     row.classList.remove('presente');
@@ -294,31 +332,101 @@ function createChecklistRow(labelText, compName){
   presContainer.style.flexDirection="column";
   presContainer.style.alignItems="center";
   const presSymbol = document.createElement("span");
-  presSymbol.textContent = "✅";
-  presSymbol.style.color="green";
-  presSymbol.style.fontSize="16px";
-  presContainer.appendChild(presSymbol);
-  presContainer.appendChild(pres);
+  presSymbol.textContent = "✅"; presSymbol.style.color="green"; presSymbol.style.fontSize="16px";
+  presContainer.appendChild(presSymbol); presContainer.appendChild(pres);
 
   const assContainer = document.createElement("div");
   assContainer.style.display="flex";
   assContainer.style.flexDirection="column";
   assContainer.style.alignItems="center";
   const assSymbol = document.createElement("span");
-  assSymbol.textContent = "❌";
-  assSymbol.style.color="red";
-  assSymbol.style.fontSize="16px";
-  assContainer.appendChild(assSymbol);
-  assContainer.appendChild(ass);
+  assSymbol.textContent = "❌"; assSymbol.style.color="red"; assSymbol.style.fontSize="16px";
+  assContainer.appendChild(assSymbol); assContainer.appendChild(ass);
 
   chkGroup.appendChild(presContainer);
   chkGroup.appendChild(assContainer);
 
+  // --- Container note ---
+  const noteContainer = document.createElement("div");
+  noteContainer.style.position = "relative";
+  noteContainer.style.display = "flex";
+  noteContainer.style.alignItems = "center";
+
+  const noteIconWrapper = document.createElement("div");
+  noteIconWrapper.style.display = "flex";
+  noteIconWrapper.style.alignItems = "center";
+  noteIconWrapper.style.justifyContent = "center";
+  noteIconWrapper.style.width = "24px";
+  noteIconWrapper.style.height = "24px";
+  noteIconWrapper.style.border = "2px solid transparent"; 
+  noteIconWrapper.style.borderRadius = "4px";
+  noteIconWrapper.style.transition = "border 0.2s";
+
+  const noteIcon = document.createElement("span");
+  noteIcon.textContent = "📝";
+  noteIcon.style.cursor = "pointer";
+  noteIcon.style.fontSize = "16px";
+  noteIconWrapper.appendChild(noteIcon);
+
+  const noteInput = document.createElement("textarea");
+  noteInput.placeholder = "Scrivi qui le note...";
+  noteInput.rows = 2;
+  noteInput.style.position = "absolute";
+  noteInput.style.top = "28px";
+  noteInput.style.left = "0";
+  noteInput.style.width = "200px";
+  noteInput.style.resize = "none";
+  noteInput.style.display = "none";
+  noteInput.style.zIndex = "100";
+
+  noteIconWrapper.addEventListener("click", (e) => {
+    noteInput.style.display = noteInput.style.display === "none" ? "block" : "none";
+    if(noteInput.style.display === "block") noteInput.focus();
+    e.stopPropagation();
+  });
+
+  document.addEventListener("click", (e) => {
+    if (!noteContainer.contains(e.target)) {
+      noteInput.style.display = "none";
+    }
+  });
+
+  // Evidenziare bordo arancione se c'è nota
+  noteInput.addEventListener("input", () => {
+    const hasNote = noteInput.value.trim() !== "";
+    noteIconWrapper.style.border = hasNote ? "2px solid #FF9800" : "2px solid transparent";
+
+    // Badge nel titolo principale del compartimento
+    if (title) {
+      let mainBadge = title.querySelector(".note-badge");
+      const allNotes = title.closest(".compartimento").querySelectorAll(".checklist-item textarea");
+      const anyNote = Array.from(allNotes).some(t => t.value.trim() !== "");
+
+      if (anyNote && !mainBadge) {
+        mainBadge = document.createElement("span");
+        mainBadge.className = "note-badge";
+        mainBadge.textContent = "📝";
+        mainBadge.style.marginLeft = "6px";
+        mainBadge.style.color = "#FF9800";
+        title.appendChild(mainBadge);
+      } else if (!anyNote && mainBadge) {
+        mainBadge.remove();
+      }
+    }
+  });
+
+  noteContainer.appendChild(noteIconWrapper);
+  noteContainer.appendChild(noteInput);
+
+  row.appendChild(noteContainer);
   row.appendChild(label);
   row.appendChild(chkGroup);
 
   return row;
 }
+
+
+
 
 // --- Bottoni hotspot ---
 function createHotspotButtons() {
@@ -445,30 +553,28 @@ function exportPDF() {
   const doc = new jsPDF();
   const pageWidth = doc.internal.pageSize.width;
   const pageHeight = doc.internal.pageSize.height;
-  let yOffset = 25;  // spazio per header
+  let yOffset = 25;
   const lineHeight = 8;
   const leftMargin = 10;
   const bottomMargin = 12;
   const tableWidth = pageWidth - 20;
-  const col1Width = tableWidth * 0.7;
-  const col2Width = tableWidth * 0.3;
+  const col1Width = tableWidth * 0.7; // Oggetto
+  const col2Width = tableWidth * 0.3; // Stato
 
   const now = new Date();
   const today = now.toLocaleDateString();
   const time = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
   const checklistTitle = "Checklist Camion VVF";
-
   const compartimenti = document.querySelectorAll(".compartimento");
 
-  // Funzione per disegnare header e footer
   function drawHeaderFooter(pageNum, totalPages) {
     // Header
     doc.setFont("helvetica", "bold");
     doc.setFontSize(14);
     doc.setTextColor(0);
     doc.text(checklistTitle, pageWidth / 2, 12, { align: "center" });
-    
+
     // Footer
     doc.setFont("helvetica", "normal");
     doc.setFontSize(10);
@@ -480,9 +586,9 @@ function exportPDF() {
   compartimenti.forEach(div => {
     const h3 = div.querySelector("h3");
 
-    if (yOffset + 25 > pageHeight - bottomMargin) { 
-      doc.addPage(); 
-      yOffset = 25; 
+    if (yOffset + 25 > pageHeight - bottomMargin) {
+      doc.addPage();
+      yOffset = 25;
     }
 
     // Titolo compartimento
@@ -517,28 +623,46 @@ function exportPDF() {
       const isAssente = item.classList.contains("assente");
 
       if (!soloAssenti || (soloAssenti && isAssente)) {
-        const label = item.querySelector("span").textContent;
+        const label = item.querySelector(".item-label").textContent;
         const stato = isPresente ? "✅ Presente" : isAssente ? "❌ Assente" : "";
+        const note = item.querySelector("textarea")?.value.trim() || "";
 
-        if (isAssente) {
-          doc.setFillColor(255, 230, 180);
-        } else if (isPresente) {
-          doc.setFillColor(200, 255, 200);
-        } else {
-          doc.setFillColor(alternate ? 240 : 255);
-        }
+        // Colore riga alternato
+        if (isAssente) doc.setFillColor(255, 230, 180);
+        else if (isPresente) doc.setFillColor(200, 255, 200);
+        else doc.setFillColor(alternate ? 240 : 255);
         doc.rect(leftMargin, yOffset - 6, tableWidth, lineHeight, "F");
 
+        // Colonne
         doc.setDrawColor(180);
         doc.rect(leftMargin, yOffset - 6, col1Width, lineHeight);
         doc.rect(leftMargin + col1Width, yOffset - 6, col2Width, lineHeight);
 
+        // Testo
         doc.setTextColor(0);
         doc.text(label, leftMargin + 2, yOffset);
         doc.text(stato, leftMargin + col1Width + 2, yOffset);
 
         yOffset += lineHeight;
         alternate = !alternate;
+
+        // Aggiungi nota sotto la riga solo se presente
+        if (note) {
+          const noteLines = doc.splitTextToSize("Note: " + note, tableWidth);
+          noteLines.forEach(line => {
+            if (yOffset + lineHeight > pageHeight - bottomMargin) {
+              doc.addPage();
+              yOffset = 25;
+            }
+            doc.setFont("helvetica", "italic");
+            doc.setFontSize(11);
+            doc.text(line, leftMargin + 2, yOffset);
+            yOffset += lineHeight;
+          });
+          doc.setFont("helvetica", "normal");
+          doc.setFontSize(12);
+          yOffset += 2; // piccolo spazio dopo la nota
+        }
 
         if (yOffset + lineHeight > pageHeight - bottomMargin) {
           doc.addPage();
@@ -547,10 +671,10 @@ function exportPDF() {
       }
     });
 
-    yOffset += 5;
+    yOffset += 5; // spazio extra dopo compartimento
   });
 
-  // Numeri di pagina, data, ora su tutte le pagine
+  // Header/footer su tutte le pagine
   const pageCount = doc.getNumberOfPages();
   for (let i = 1; i <= pageCount; i++) {
     doc.setPage(i);
@@ -559,6 +683,7 @@ function exportPDF() {
 
   doc.save(fileName + ".pdf");
 }
+
 
 
 document.getElementById("exportPDF").addEventListener("click", exportPDF);
