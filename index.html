@@ -696,8 +696,8 @@ function exportPDF() {
   const leftMargin = 10;
   const bottomMargin = 12;
   const tableWidth = pageWidth - 20;
-  const col1Width = tableWidth * 0.7; // Oggetto
-  const col2Width = tableWidth * 0.3; // Stato
+  const col1Width = tableWidth * 0.7;
+  const col2Width = tableWidth * 0.3;
 
   const now = new Date();
   const today = now.toLocaleDateString();
@@ -707,13 +707,11 @@ function exportPDF() {
   const compartimenti = document.querySelectorAll(".compartimento");
 
   function drawHeaderFooter(pageNum, totalPages) {
-    // Header
     doc.setFont("helvetica", "bold");
     doc.setFontSize(14);
     doc.setTextColor(0);
     doc.text(checklistTitle, pageWidth / 2, 12, { align: "center" });
 
-    // Footer
     doc.setFont("helvetica", "normal");
     doc.setFontSize(10);
     doc.setTextColor(100);
@@ -736,27 +734,125 @@ function exportPDF() {
     doc.text(h3.textContent, leftMargin, yOffset);
     yOffset += lineHeight;
 
-    // Riga separatrice
     doc.setDrawColor(180);
     doc.setLineWidth(0.5);
     doc.line(leftMargin, yOffset - 3, pageWidth - leftMargin, yOffset - 3);
 
-    const items = div.querySelectorAll(".checklist-item");
+    const itemsDiretti = Array.from(div.querySelectorAll(".checklist-item")).filter(i => !i.closest(".subcategory"));
+    const sottocategorie = div.querySelectorAll(".subcategory");
 
-    // Intestazione tabella
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(12);
-    doc.setFillColor(200, 200, 200);
-    doc.rect(leftMargin, yOffset - 6, tableWidth, lineHeight, "F");
-    doc.setTextColor(0);
-    doc.text("Oggetto", leftMargin + 2, yOffset);
-    doc.text("Stato", leftMargin + col1Width + 2, yOffset);
-    yOffset += lineHeight;
-
-    doc.setFont("helvetica", "normal");
     let alternate = false;
 
-    items.forEach(item => {
+    // --- Processa sottocategorie ---
+    sottocategorie.forEach(sub => {
+      if (yOffset + lineHeight > pageHeight - bottomMargin) {
+        doc.addPage();
+        yOffset = 25;
+      }
+
+      // Prendi il titolo pulito della sottocategoria
+      let subTitle = "";
+      const h4 = sub.querySelector("h4");
+      if (h4) {
+        const spanStato = h4.querySelector("span");
+        if (spanStato) spanStato.remove();
+        subTitle = h4.textContent
+          .replace(/Presente|Assente/g, '')
+          .replace(/[%¶\u0000-\u001F\u007F-\u009F]+/g, '')
+          .trim();
+      }
+
+      // Determina lo stato della sottocategoria
+      const subIsAssente = sub.classList.contains("assente");
+      const subIsPresente = sub.classList.contains("presente");
+
+      // Intestazione sottocategoria
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(12);
+      doc.setFillColor(200, 200, 200);
+      doc.rect(leftMargin, yOffset - 6, tableWidth, lineHeight, "F");
+      doc.setTextColor(0);
+      doc.text(subTitle, leftMargin + 2, yOffset);
+      doc.text("Stato", leftMargin + col1Width + 2, yOffset);
+      yOffset += lineHeight;
+
+      const subItems = sub.querySelectorAll(".checklist-item");
+      subItems.forEach(item => {
+        const isPresente = item.classList.contains("presente");
+        const isAssente = item.classList.contains("assente");
+
+        // Se la sottocategoria è assente, esporta tutto in rosso
+        if (subIsAssente || (!soloAssenti || (soloAssenti && isAssente))) {
+          const label = item.querySelector(".item-label").textContent;
+          const stato = isPresente ? "✅ Presente" : isAssente ? "❌ Assente" : "";
+          const note = item.querySelector("textarea")?.value.trim() || "";
+
+          // Colore testo
+          if (subIsAssente) doc.setTextColor(255, 0, 0);
+          else if (isAssente) doc.setTextColor(255, 0, 0);
+          else doc.setTextColor(0);
+
+          // Sfondo riga
+          if (subIsAssente) doc.setFillColor(255, 200, 200);
+          else if (isAssente) doc.setFillColor(255, 230, 180);
+          else doc.setFillColor(alternate ? 240 : 255);
+
+          doc.rect(leftMargin, yOffset - 6, tableWidth, lineHeight, "F");
+          doc.setDrawColor(180);
+          doc.rect(leftMargin, yOffset - 6, col1Width, lineHeight);
+          doc.rect(leftMargin + col1Width, yOffset - 6, col2Width, lineHeight);
+
+          doc.text(label, leftMargin + 2, yOffset);
+          doc.text(stato, leftMargin + col1Width + 2, yOffset);
+
+          yOffset += lineHeight;
+          alternate = !alternate;
+
+          // Note
+          if (note) {
+            const noteLines = doc.splitTextToSize("Note: " + note, tableWidth);
+            noteLines.forEach(line => {
+              if (yOffset + lineHeight > pageHeight - bottomMargin) {
+                doc.addPage();
+                yOffset = 25;
+              }
+              doc.setFont("helvetica", "italic");
+              doc.setFontSize(11);
+              doc.text(line, leftMargin + 2, yOffset);
+              yOffset += lineHeight;
+            });
+            doc.setFont("helvetica", "normal");
+            doc.setFontSize(12);
+            yOffset += 2;
+          }
+
+          if (yOffset + lineHeight > pageHeight - bottomMargin) {
+            doc.addPage();
+            yOffset = 25;
+          }
+        }
+      });
+
+      yOffset += 3;
+    });
+
+    // --- Items diretti ---
+    if (itemsDiretti.length) {
+      if (yOffset + lineHeight > pageHeight - bottomMargin) {
+        doc.addPage();
+        yOffset = 25;
+      }
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(12);
+      doc.setFillColor(200, 200, 200);
+      doc.rect(leftMargin, yOffset - 6, tableWidth, lineHeight, "F");
+      doc.setTextColor(0);
+      doc.text("Oggetto", leftMargin + 2, yOffset);
+      doc.text("Stato", leftMargin + col1Width + 2, yOffset);
+      yOffset += lineHeight;
+    }
+
+    itemsDiretti.forEach(item => {
       const isPresente = item.classList.contains("presente");
       const isAssente = item.classList.contains("assente");
 
@@ -765,18 +861,15 @@ function exportPDF() {
         const stato = isPresente ? "✅ Presente" : isAssente ? "❌ Assente" : "";
         const note = item.querySelector("textarea")?.value.trim() || "";
 
-        // Colore riga alternato
         if (isAssente) doc.setFillColor(255, 230, 180);
         else if (isPresente) doc.setFillColor(200, 255, 200);
         else doc.setFillColor(alternate ? 240 : 255);
         doc.rect(leftMargin, yOffset - 6, tableWidth, lineHeight, "F");
 
-        // Colonne
         doc.setDrawColor(180);
         doc.rect(leftMargin, yOffset - 6, col1Width, lineHeight);
         doc.rect(leftMargin + col1Width, yOffset - 6, col2Width, lineHeight);
 
-        // Testo
         doc.setTextColor(0);
         doc.text(label, leftMargin + 2, yOffset);
         doc.text(stato, leftMargin + col1Width + 2, yOffset);
@@ -784,7 +877,6 @@ function exportPDF() {
         yOffset += lineHeight;
         alternate = !alternate;
 
-        // Aggiungi nota sotto la riga solo se presente
         if (note) {
           const noteLines = doc.splitTextToSize("Note: " + note, tableWidth);
           noteLines.forEach(line => {
@@ -799,7 +891,7 @@ function exportPDF() {
           });
           doc.setFont("helvetica", "normal");
           doc.setFontSize(12);
-          yOffset += 2; // piccolo spazio dopo la nota
+          yOffset += 2;
         }
 
         if (yOffset + lineHeight > pageHeight - bottomMargin) {
@@ -809,10 +901,9 @@ function exportPDF() {
       }
     });
 
-    yOffset += 5; // spazio extra dopo compartimento
+    yOffset += 5;
   });
 
-  // Header/footer su tutte le pagine
   const pageCount = doc.getNumberOfPages();
   for (let i = 1; i <= pageCount; i++) {
     doc.setPage(i);
@@ -821,6 +912,7 @@ function exportPDF() {
 
   doc.save(fileName + ".pdf");
 }
+
 
 
 
