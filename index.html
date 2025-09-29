@@ -731,7 +731,13 @@ function exportPDF() {
     doc.setFont("helvetica", "bold");
     doc.setFontSize(14);
     doc.setTextColor(0);
-    doc.text(h3.textContent, leftMargin, yOffset);
+
+    // Sfondo giallo chiaro per il compartimento
+    doc.setFillColor(255, 255, 180);
+    doc.rect(leftMargin, yOffset - 6, tableWidth, lineHeight, "F");
+
+    // Testo centrato
+    doc.text(h3.textContent, pageWidth / 2, yOffset, { align: "center" });
     yOffset += lineHeight;
 
     doc.setDrawColor(180);
@@ -750,7 +756,7 @@ function exportPDF() {
         yOffset = 25;
       }
 
-      // Prendi il titolo pulito della sottocategoria
+      // Titolo sottocategoria
       let subTitle = "";
       const h4 = sub.querySelector("h4");
       if (h4) {
@@ -762,7 +768,6 @@ function exportPDF() {
           .trim();
       }
 
-      // Determina lo stato della sottocategoria
       const subIsAssente = sub.classList.contains("assente");
       const subIsPresente = sub.classList.contains("presente");
 
@@ -781,30 +786,25 @@ function exportPDF() {
         const isPresente = item.classList.contains("presente");
         const isAssente = item.classList.contains("assente");
 
-        // Se la sottocategoria è assente, esporta tutto in rosso
         if (subIsAssente || (!soloAssenti || (soloAssenti && isAssente))) {
           const label = item.querySelector(".item-label").textContent;
           const stato = isPresente ? "✅ Presente" : isAssente ? "❌ Assente" : "";
           const note = item.querySelector("textarea")?.value.trim() || "";
 
-          // Colore testo
-          if (subIsAssente) doc.setTextColor(255, 0, 0);
-          else if (isAssente) doc.setTextColor(255, 0, 0);
-          else doc.setTextColor(0);
-
-          // Sfondo riga
-          if (subIsAssente) doc.setFillColor(255, 200, 200);
-          else if (isAssente) doc.setFillColor(255, 230, 180);
+          // Colore sfondo uniforme
+          if (subIsAssente || isAssente) doc.setFillColor(255, 200, 200); // rosso
+          else if (subIsPresente || isPresente) doc.setFillColor(200, 255, 200); // verde
           else doc.setFillColor(alternate ? 240 : 255);
 
           doc.rect(leftMargin, yOffset - 6, tableWidth, lineHeight, "F");
+
           doc.setDrawColor(180);
           doc.rect(leftMargin, yOffset - 6, col1Width, lineHeight);
           doc.rect(leftMargin + col1Width, yOffset - 6, col2Width, lineHeight);
 
+          doc.setTextColor(0);
           doc.text(label, leftMargin + 2, yOffset);
           doc.text(stato, leftMargin + col1Width + 2, yOffset);
-
           yOffset += lineHeight;
           alternate = !alternate;
 
@@ -861,11 +861,12 @@ function exportPDF() {
         const stato = isPresente ? "✅ Presente" : isAssente ? "❌ Assente" : "";
         const note = item.querySelector("textarea")?.value.trim() || "";
 
-        if (isAssente) doc.setFillColor(255, 230, 180);
+        // Colore sfondo uniforme
+        if (isAssente) doc.setFillColor(255, 200, 200);
         else if (isPresente) doc.setFillColor(200, 255, 200);
         else doc.setFillColor(alternate ? 240 : 255);
-        doc.rect(leftMargin, yOffset - 6, tableWidth, lineHeight, "F");
 
+        doc.rect(leftMargin, yOffset - 6, tableWidth, lineHeight, "F");
         doc.setDrawColor(180);
         doc.rect(leftMargin, yOffset - 6, col1Width, lineHeight);
         doc.rect(leftMargin + col1Width, yOffset - 6, col2Width, lineHeight);
@@ -913,6 +914,56 @@ function exportPDF() {
   doc.save(fileName + ".pdf");
 }
 
+
+// --- Funzione helper per aggiungere una riga item ---
+function addItemRow(doc, item, soloAssenti, leftMargin, yOffset, pageHeight, bottomMargin, tableWidth, col1Width, col2Width, lineHeight, alternate) {
+  const isPresente = item.classList.contains("presente");
+  const isAssente = item.classList.contains("assente");
+
+  if (!soloAssenti || (soloAssenti && isAssente)) {
+    const label = item.querySelector(".item-label").textContent;
+    const stato = isPresente ? "✅ Presente" : isAssente ? "❌ Assente" : "";
+    const note = item.querySelector("textarea")?.value.trim() || "";
+
+    if (isAssente) doc.setFillColor(255, 230, 180);
+    else if (isPresente) doc.setFillColor(200, 255, 200);
+    else doc.setFillColor(alternate ? 240 : 255);
+    doc.rect(leftMargin, yOffset - 6, tableWidth, lineHeight, "F");
+
+    doc.setDrawColor(180);
+    doc.rect(leftMargin, yOffset - 6, col1Width, lineHeight);
+    doc.rect(leftMargin + col1Width, yOffset - 6, col2Width, lineHeight);
+
+    doc.setTextColor(0);
+    doc.text(label, leftMargin + 2, yOffset);
+    doc.text(stato, leftMargin + col1Width + 2, yOffset);
+
+    yOffset += lineHeight;
+
+    if (note) {
+      const noteLines = doc.splitTextToSize("Note: " + note, tableWidth - 4);
+      noteLines.forEach(line => {
+        if (yOffset + lineHeight > pageHeight - bottomMargin) {
+          doc.addPage();
+          yOffset = 25;
+        }
+        doc.setFont("helvetica", "italic");
+        doc.setFontSize(11);
+        doc.text(line, leftMargin + 2, yOffset);
+        yOffset += lineHeight;
+      });
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(12);
+      yOffset += 2;
+    }
+
+    if (yOffset + lineHeight > pageHeight - bottomMargin) {
+      doc.addPage();
+      yOffset = 25;
+    }
+  }
+  return yOffset;
+}
 
 
 
