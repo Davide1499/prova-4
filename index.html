@@ -25,7 +25,7 @@ svg { width:100%; height:auto; display:block; border:1px solid #ccc; border-radi
 .compartimento { border:1px solid #ddd; margin:8px 0; border-radius:6px; overflow:hidden; }
 .compartimento h3 { margin:0; padding:10px; background:#eee; cursor:pointer; transition: background 0.3s; }
 .subcategory { margin-left:20px; border-left:2px dashed #aaa; padding-left:10px; margin-top:6px; }
-.subcategory h4 { margin:0; }
+.subcategory h4 { margin-left: 0; }
 .checklist { padding:10px; display:none; }
 .checklist-item { display:flex; justify-content:space-between; align-items:center; margin:6px 0; padding:6px; border-radius:4px; }
 .checklist-item.presente { background:#4CAF50; color:#fff; }
@@ -181,7 +181,19 @@ const camionData = {
   "Cabina": [
     { label: "Autoradio", foto: "https://davide1499.github.io/prova-5/radio.jpg" },
     { label: "Paletta Segnaletica",},
-    { label: "Fanalino Portatile", }
+   { "label": "Nastro Segnaletico" },
+    { "label": "Confezione di guanti in lattice" },
+    { "label": "Fanalino Portatile" },
+    { "label": "Cerca fughe" },
+    { "label": "Rilevatore Multigas" },
+    { "label": "Massa grassa x fuga di gas" },
+    { "label": "Chiave per ascensore" },
+    { "label": "Tifor con leva" },
+    { "label": "2 Tute complete x calabroni" },
+    { "label": "Spray x calabroni" },
+    { "label": "Segaccio" },
+    { "label": "Piccone" },
+    { "label": "Ascia grande" }
   ],
   "Anteriore Destro": [
     { label: "Pompa sommersa",  },
@@ -211,8 +223,10 @@ const camionData = {
         { label: "2 Dischi x molettina" },
         { label: "7 Giraviti italiani" },
         { label: "5 Giraviti a croce" },
-        { label: "Mazzetta" },
-        { label: "Martello" }
+        { "label": "Pinza" },
+        { "label": "Tenaglia" },
+        { "label": "Mazzetta" },
+        { "label": "Martello" }
       ]
     }
   },
@@ -250,7 +264,8 @@ const camionData = {
     { label: "Seghetto per vetro" },
     { label: "Mazza" }
   ],
-  "Centrale Sinistro": [
+"Centrale Sinistro": {
+  items: [
     { label: "3 Birilli segnaletici" },
     { label: "Braga da 2 T" },
     { label: "5 Maniglioni" },
@@ -260,13 +275,25 @@ const camionData = {
     { label: "Coppia di catene" },
     { label: "Giratubi" }
   ],
+  subcategories: {
+    "Sacco TPSS": [
+      { label: "Bombolino Ossigeno da 3L" },
+      { label: "Canule di guedel" },
+      { label: "Collare Cervicale" }
+    ]
+  }
+},
+
+  
   "Posteriore Sinistro": [
     { label: "2 Scappelli" },
     { label: "Divaricatore" },
     { label: "Cesoia" },
     { label: "Puntello idraulico" },
     { label: "Centralina barellabile" },
-    { label: "Motoventilatore" }
+    { label: "Motoventilatore" },
+{ "label": "Chiave a brugola" },
+    { "label": "Chiave candela" }
   ],
   "Vano Pompa": [
     { label: "2 Scappelli" },
@@ -277,8 +304,15 @@ const camionData = {
     { label: "Motoventilatore" }
   ],
   "Tetto": [
-    { label: "Segnalatori luminosi" },
-    { label: "Antenna radio" }
+    { "label": "Lancia x schiuma bassa esp." },
+    { "label": "Scala italiana" },
+    { "label": "3 Autoprotettori" },
+    { "label": "Scala a ganci" },
+    { "label": "Bombola" },
+    { "label": "Mezzo marinaio" },
+    { "label": "3 Maschere x autoprotettore" },
+    { "label": "Forcone" },
+    { "label": "Fioretto dielettrico" }
   ]
 };
 
@@ -311,49 +345,148 @@ function createCamionUI(){
       checklistDiv.appendChild(createChecklistRow(item, comp));
     });
 
-    Object.keys(subcategories).forEach(sub=>{
-      const subDiv = document.createElement("div");
-      subDiv.className = "subcategory";
+Object.keys(subcategories).forEach(sub => {
+    const subDiv = document.createElement("div");
+    subDiv.className = "subcategory";
 
-      const subTitle = document.createElement("h4");
-      subTitle.style.cursor = "pointer";
-      subTitle.style.display = "flex";
-      subTitle.style.alignItems = "center";
-      subTitle.style.gap = "6px";
+    const subTitle = document.createElement("h4");
+    subTitle.style.cursor = "pointer";
+    subTitle.style.display = "flex";
+    subTitle.style.alignItems = "center";
+    subTitle.style.gap = "6px";
 
-      const arrow = document.createElement("span");
-      arrow.textContent = "▶";
-      arrow.style.transition = "transform 0.3s";
-      subTitle.appendChild(arrow);
+    // Pulsanti Presente / Assente
+    const presenteBtn = document.createElement("button");
+    presenteBtn.textContent = "Presente";
+    presenteBtn.style.padding = "2px 6px";
+    subTitle.appendChild(presenteBtn);
 
-      const titleText = document.createElement("span");
-      titleText.textContent = sub;
-      subTitle.appendChild(titleText);
+    const assenteBtn = document.createElement("button");
+    assenteBtn.textContent = "Assente";
+    assenteBtn.style.padding = "2px 6px";
+    subTitle.appendChild(assenteBtn);
 
-      subDiv.appendChild(subTitle);
+    const arrow = document.createElement("span");
+    arrow.textContent = "▶";
+    arrow.style.transition = "transform 0.3s";
+    arrow.style.marginLeft = "auto";
+    subTitle.appendChild(arrow);
 
-      const subChecklist = document.createElement("div");
-      subcategories[sub].forEach(subItem=>{
-        subChecklist.appendChild(createChecklistRow(subItem, comp));
-      });
-      subDiv.appendChild(subChecklist);
+    const titleText = document.createElement("span");
+    titleText.textContent = sub;
+    titleText.style.marginLeft = "6px";
+    subTitle.appendChild(titleText);
 
-      subTitle.addEventListener("click", ()=>{
-        const isClosed = !subDiv.classList.contains("open");
-        if(isClosed){
-          subDiv.classList.add("open");
-          arrow.style.transform = "rotate(90deg)";
+    subDiv.appendChild(subTitle);
+
+    const subChecklist = document.createElement("div");
+    subChecklist.style.pointerEvents = "none";
+    subChecklist.style.opacity = "0.5";
+
+    subcategories[sub].forEach(subItem => {
+        const row = createChecklistRow(subItem, comp);
+        row.querySelectorAll("input").forEach(i => i.disabled = true);
+        subChecklist.appendChild(row);
+    });
+    subDiv.appendChild(subChecklist);
+
+    // Funzione per aprire/chiudere sottocategoria
+    const toggleSubcategory = (forceOpen) => {
+        const isOpen = subDiv.classList.contains("open");
+        const shouldOpen = forceOpen !== undefined ? forceOpen : !isOpen;
+        if (shouldOpen) {
+            subDiv.classList.add("open");
+            arrow.style.transform = "rotate(90deg)";
         } else {
-          subDiv.classList.remove("open");
-          arrow.style.transform = "rotate(0deg)";
+            subDiv.classList.remove("open");
+            arrow.style.transform = "rotate(0deg)";
         }
-      });
+    };
 
-      checklistDiv.appendChild(subDiv);
+    // Click freccia o titolo
+    arrow.addEventListener("click", (e) => {
+        e.stopPropagation();
+        if (presenteBtn.style.background === "rgb(76, 175, 80)") {
+            toggleSubcategory();
+        }
+    });
+    titleText.addEventListener("click", () => {
+        if (presenteBtn.style.background === "rgb(76, 175, 80)") {
+            toggleSubcategory();
+        }
     });
 
-    div.appendChild(checklistDiv);
-    camionDiv.appendChild(div);
+  // Click Presente
+presenteBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    presenteBtn.style.background = "#4caf50";
+    assenteBtn.style.background = "";
+
+    subChecklist.style.pointerEvents = "auto";
+    subChecklist.style.opacity = "1";
+    subChecklist.querySelectorAll("input").forEach(i => {
+        i.checked = false;
+        i.disabled = false;
+        const row = i.closest(".checklist-item");
+        if (row) row.classList.remove("presente", "assente");
+    });
+
+    // Apri sottocategoria come se cliccassi freccia
+    toggleSubcategory(true);
+
+    // Aggiorna stato compartimento
+    updateCompartmentStatus(comp);
+});
+
+
+ // Click su Assente
+assenteBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+
+    // Aggiorna colori dei bottoni
+    assenteBtn.style.background = "#f44336"; // rosso
+    presenteBtn.style.background = "";      // reset
+
+    // Disabilita interazione con la sottochecklist
+    subChecklist.style.pointerEvents = "none";
+    subChecklist.style.opacity = "0.5";
+
+    // Segna tutti gli item come assenti
+    subChecklist.querySelectorAll(".checklist-item").forEach(item => {
+        const checkbox = item.querySelector("input[type=checkbox]");
+        if (checkbox) {
+            checkbox.checked = false;               // deseleziona
+            checkbox.disabled = true;              // disabilita
+        }
+        item.classList.remove("presente");         // rimuove classe presente
+        item.classList.add("assente");             // aggiunge classe assente
+    });
+
+    // Chiudi sottocategoria come se cliccassi sulla freccia
+    toggleSubcategory(false);
+
+    // Aggiorna stato del compartimento
+    updateCompartmentStatus(comp);
+});
+
+
+
+    // Controllo chiusura automatica se tutte le checkbox interne selezionate
+    subChecklist.querySelectorAll("input").forEach(i => {
+        i.addEventListener("change", () => {
+            const allChecked = Array.from(subChecklist.querySelectorAll("input"))
+                .every(input => input.checked);
+            if(allChecked) toggleSubcategory(false); // chiude con effetto freccia
+        });
+    });
+
+    checklistDiv.appendChild(subDiv);
+});
+
+div.appendChild(checklistDiv);
+camionDiv.appendChild(div);
+
+
   });
 }
   
@@ -706,6 +839,16 @@ function exportPDF() {
   const checklistTitle = "Checklist Camion VVF";
   const compartimenti = document.querySelectorAll(".compartimento");
 
+  // --- Funzione di pulizia testo ---
+  function cleanText(str) {
+    if (!str) return '';
+    return str
+      .replace(/Presente|Assente/g, '')                         
+      .replace(/[%¶\u0000-\u001F\u007F-\u009F\u200B\u00A0]+/g, '') 
+      .replace(/\s+/g, ' ')
+      .trim();
+  }
+
   function drawHeaderFooter(pageNum, totalPages) {
     doc.setFont("helvetica", "bold");
     doc.setFontSize(14);
@@ -721,23 +864,22 @@ function exportPDF() {
 
   compartimenti.forEach(div => {
     const h3 = div.querySelector("h3");
+    const compartimentoTitle = cleanText(h3.textContent);
 
     if (yOffset + 25 > pageHeight - bottomMargin) {
       doc.addPage();
       yOffset = 25;
     }
 
-    // Titolo compartimento
+    // Titolo compartimento centrato, grassetto e sfondo giallo
     doc.setFont("helvetica", "bold");
     doc.setFontSize(14);
     doc.setTextColor(0);
-
-    // Sfondo giallo chiaro per il compartimento
-    doc.setFillColor(255, 255, 180);
-    doc.rect(leftMargin, yOffset - 6, tableWidth, lineHeight, "F");
-
-    // Testo centrato
-    doc.text(h3.textContent, pageWidth / 2, yOffset, { align: "center" });
+    doc.setFillColor(255, 255, 150); // sfondo giallo chiaro
+    const textWidth = doc.getTextWidth(compartimentoTitle);
+    const rectPadding = 2;
+    doc.rect((pageWidth - textWidth) / 2 - rectPadding, yOffset - 6, textWidth + rectPadding * 2, lineHeight, "F");
+    doc.text(compartimentoTitle, pageWidth / 2, yOffset, { align: "center" });
     yOffset += lineHeight;
 
     doc.setDrawColor(180);
@@ -747,6 +889,7 @@ function exportPDF() {
     const itemsDiretti = Array.from(div.querySelectorAll(".checklist-item")).filter(i => !i.closest(".subcategory"));
     const sottocategorie = div.querySelectorAll(".subcategory");
 
+    doc.setFont("helvetica", "normal");
     let alternate = false;
 
     // --- Processa sottocategorie ---
@@ -756,20 +899,13 @@ function exportPDF() {
         yOffset = 25;
       }
 
-      // Titolo sottocategoria
       let subTitle = "";
       const h4 = sub.querySelector("h4");
       if (h4) {
         const spanStato = h4.querySelector("span");
         if (spanStato) spanStato.remove();
-        subTitle = h4.textContent
-          .replace(/Presente|Assente/g, '')
-          .replace(/[%¶\u0000-\u001F\u007F-\u009F]+/g, '')
-          .trim();
+        subTitle = cleanText(h4.textContent);
       }
-
-      const subIsAssente = sub.classList.contains("assente");
-      const subIsPresente = sub.classList.contains("presente");
 
       // Intestazione sottocategoria
       doc.setFont("helvetica", "bold");
@@ -781,21 +917,20 @@ function exportPDF() {
       doc.text("Stato", leftMargin + col1Width + 2, yOffset);
       yOffset += lineHeight;
 
+      // --- Items della sottocategoria ---
       const subItems = sub.querySelectorAll(".checklist-item");
       subItems.forEach(item => {
         const isPresente = item.classList.contains("presente");
         const isAssente = item.classList.contains("assente");
 
-        if (subIsAssente || (!soloAssenti || (soloAssenti && isAssente))) {
-          const label = item.querySelector(".item-label").textContent;
+        if (!soloAssenti || (soloAssenti && isAssente)) {
+          const label = cleanText(item.querySelector(".item-label").textContent);
           const stato = isPresente ? "✅ Presente" : isAssente ? "❌ Assente" : "";
-          const note = item.querySelector("textarea")?.value.trim() || "";
+          const note = cleanText(item.querySelector("textarea")?.value);
 
-          // Colore sfondo uniforme
-          if (subIsAssente || isAssente) doc.setFillColor(255, 200, 200); // rosso
-          else if (subIsPresente || isPresente) doc.setFillColor(200, 255, 200); // verde
+          if (isAssente) doc.setFillColor(255, 230, 180);
+          else if (isPresente) doc.setFillColor(200, 255, 200);
           else doc.setFillColor(alternate ? 240 : 255);
-
           doc.rect(leftMargin, yOffset - 6, tableWidth, lineHeight, "F");
 
           doc.setDrawColor(180);
@@ -805,10 +940,10 @@ function exportPDF() {
           doc.setTextColor(0);
           doc.text(label, leftMargin + 2, yOffset);
           doc.text(stato, leftMargin + col1Width + 2, yOffset);
+
           yOffset += lineHeight;
           alternate = !alternate;
 
-          // Note
           if (note) {
             const noteLines = doc.splitTextToSize("Note: " + note, tableWidth);
             noteLines.forEach(line => {
@@ -836,7 +971,7 @@ function exportPDF() {
       yOffset += 3;
     });
 
-    // --- Items diretti ---
+    // --- Processa items diretti ---
     if (itemsDiretti.length) {
       if (yOffset + lineHeight > pageHeight - bottomMargin) {
         doc.addPage();
@@ -857,16 +992,15 @@ function exportPDF() {
       const isAssente = item.classList.contains("assente");
 
       if (!soloAssenti || (soloAssenti && isAssente)) {
-        const label = item.querySelector(".item-label").textContent;
+        const label = cleanText(item.querySelector(".item-label").textContent);
         const stato = isPresente ? "✅ Presente" : isAssente ? "❌ Assente" : "";
-        const note = item.querySelector("textarea")?.value.trim() || "";
+        const note = cleanText(item.querySelector("textarea")?.value);
 
-        // Colore sfondo uniforme
-        if (isAssente) doc.setFillColor(255, 200, 200);
+        if (isAssente) doc.setFillColor(255, 230, 180);
         else if (isPresente) doc.setFillColor(200, 255, 200);
         else doc.setFillColor(alternate ? 240 : 255);
-
         doc.rect(leftMargin, yOffset - 6, tableWidth, lineHeight, "F");
+
         doc.setDrawColor(180);
         doc.rect(leftMargin, yOffset - 6, col1Width, lineHeight);
         doc.rect(leftMargin + col1Width, yOffset - 6, col2Width, lineHeight);
@@ -915,55 +1049,17 @@ function exportPDF() {
 }
 
 
-// --- Funzione helper per aggiungere una riga item ---
-function addItemRow(doc, item, soloAssenti, leftMargin, yOffset, pageHeight, bottomMargin, tableWidth, col1Width, col2Width, lineHeight, alternate) {
-  const isPresente = item.classList.contains("presente");
-  const isAssente = item.classList.contains("assente");
 
-  if (!soloAssenti || (soloAssenti && isAssente)) {
-    const label = item.querySelector(".item-label").textContent;
-    const stato = isPresente ? "✅ Presente" : isAssente ? "❌ Assente" : "";
-    const note = item.querySelector("textarea")?.value.trim() || "";
 
-    if (isAssente) doc.setFillColor(255, 230, 180);
-    else if (isPresente) doc.setFillColor(200, 255, 200);
-    else doc.setFillColor(alternate ? 240 : 255);
-    doc.rect(leftMargin, yOffset - 6, tableWidth, lineHeight, "F");
 
-    doc.setDrawColor(180);
-    doc.rect(leftMargin, yOffset - 6, col1Width, lineHeight);
-    doc.rect(leftMargin + col1Width, yOffset - 6, col2Width, lineHeight);
 
-    doc.setTextColor(0);
-    doc.text(label, leftMargin + 2, yOffset);
-    doc.text(stato, leftMargin + col1Width + 2, yOffset);
 
-    yOffset += lineHeight;
 
-    if (note) {
-      const noteLines = doc.splitTextToSize("Note: " + note, tableWidth - 4);
-      noteLines.forEach(line => {
-        if (yOffset + lineHeight > pageHeight - bottomMargin) {
-          doc.addPage();
-          yOffset = 25;
-        }
-        doc.setFont("helvetica", "italic");
-        doc.setFontSize(11);
-        doc.text(line, leftMargin + 2, yOffset);
-        yOffset += lineHeight;
-      });
-      doc.setFont("helvetica", "normal");
-      doc.setFontSize(12);
-      yOffset += 2;
-    }
 
-    if (yOffset + lineHeight > pageHeight - bottomMargin) {
-      doc.addPage();
-      yOffset = 25;
-    }
-  }
-  return yOffset;
-}
+
+
+
+
 
 
 
