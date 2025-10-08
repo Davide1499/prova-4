@@ -125,23 +125,23 @@ label { margin-right:10px; cursor:pointer; }
     <svg id="camionSVG" viewBox="0 0 600 2000">
       <image href="https://davide1499.github.io/prova-5/camion.jpg" x="0" y="0" width="600" height="400"/>
       <rect x="0" y="0" width="600" height="30" fill="#fff"/>
-      <text x="300" y="22" text-anchor="middle" font-size="20" font-weight="bold" fill="#000">Anteriore Destro</text>
+      <text x="300" y="22" text-anchor="middle" font-size="20" font-weight="bold" fill="#000">LATO DESTRO</text>
         
       <image href="https://davide1499.github.io/prova-5/ciao.jpg" x="0" y="400" width="600" height="400"/>
       <rect x="0" y="400" width="600" height="30" fill="#fff"/>
-      <text x="300" y="422" text-anchor="middle" font-size="20" font-weight="bold" fill="#000">Anteriore Sinistro</text>
+      <text x="300" y="422" text-anchor="middle" font-size="20" font-weight="bold" fill="#000">LATO SINISTRO</text>
         
-      <image href="https://davide1499.github.io/prova-5/vanopompa.jpg" x="0" y="800" width="600" height="400"/>
+      <image href="https://davide1499.github.io/prova-5/vanopompa1.jpg" x="0" y="800" width="600" height="400"/>
       <rect x="0" y="800" width="600" height="30" fill="#fff"/>
-      <text x="300" y="822" text-anchor="middle" font-size="20" font-weight="bold" fill="#000">Vano Pompa</text>
+      <text x="300" y="822" text-anchor="middle" font-size="20" font-weight="bold" fill="#000">VANO POMPA</text>
 
       <image href="https://davide1499.github.io/prova-5/cabina.jpg" x="0" y="1200" width="600" height="400"/>
       <rect x="0" y="1200" width="600" height="30" fill="#fff"/>
-      <text x="300" y="1222" text-anchor="middle" font-size="20" font-weight="bold" fill="#000">Cabina</text>
+      <text x="300" y="1222" text-anchor="middle" font-size="20" font-weight="bold" fill="#000">CABINA</text>
 
       <image href="https://davide1499.github.io/prova-5/tetto.jpg" x="0" y="1600" width="600" height="400"/>
       <rect x="0" y="1600" width="600" height="30" fill="#fff"/>
-      <text x="300" y="1622" text-anchor="middle" font-size="20" font-weight="bold" fill="#000">Tetto</text>
+      <text x="300" y="1622" text-anchor="middle" font-size="20" font-weight="bold" fill="#000">TETTO</text>
     </svg>
   </div>
 
@@ -696,24 +696,41 @@ function createHotspotButtons() {
     btn.style.left = h.x * scaleX + "px";
     btn.style.top = h.y * scaleY + "px";
 
-    btn.addEventListener('click', () => {
-      document.querySelectorAll('.checklist').forEach(c => c.style.display='none');
-      const header = Array.from(document.querySelectorAll('.compartimento h3'))
-                          .find(hd => hd.textContent === h.name);
-      if(header){
-        const checklistDiv = header.nextElementSibling;
-        checklistDiv.style.display='block';
-        checklistDiv.classList.remove('focus-blink');
-        void checklistDiv.offsetWidth; 
-        checklistDiv.classList.add('focus-blink');
-        checklistDiv.scrollIntoView({behavior:'smooth', block:'center'});
-      }
-      document.querySelectorAll('.hotspot-btn').forEach(b=>b.classList.remove('blinking'));
-      btn.classList.add('blinking');
-    });
+   btn.addEventListener('click', () => {
+  const header = Array.from(document.querySelectorAll('.compartimento h3'))
+                      .find(hd => hd.textContent === h.name);
 
-    rightDiv.appendChild(btn);
-  });
+  if (header) {
+    const checklistDiv = header.nextElementSibling;
+    const isOpen = checklistDiv.style.display === 'block';
+
+    // Nasconde tutte le checklist
+    document.querySelectorAll('.checklist').forEach(c => c.style.display = 'none');
+
+    // Rimuove effetto lampeggiante da tutti i bottoni
+    document.querySelectorAll('.hotspot-btn').forEach(b => b.classList.remove('blinking'));
+
+    // Se era già aperta, la richiude e basta
+    if (isOpen) {
+      checklistDiv.style.display = 'none';
+      return;
+    }
+
+    // Altrimenti la apre normalmente
+    checklistDiv.style.display = 'block';
+    checklistDiv.classList.remove('focus-blink');
+    void checklistDiv.offsetWidth; // forza il reflow per riattivare l'animazione
+    checklistDiv.classList.add('focus-blink');
+    checklistDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+    // Evidenzia il bottone attivo
+    btn.classList.add('blinking');
+  }
+});
+
+rightDiv.appendChild(btn);
+});
+
 }
 // --- Modale foto ---
 const modalFoto = document.getElementById("modalFoto");
@@ -1064,7 +1081,7 @@ const nextSlide = document.getElementById("nextSlide");
 const immaginiCamion = [
   "https://davide1499.github.io/prova-5/camion.jpg",
   "https://davide1499.github.io/prova-5/cabina.jpg",
-  "https://davide1499.github.io/prova-5/vanopompa.jpg"
+  "https://davide1499.github.io/prova-5/vanopompa1.jpg"
 ];
 let currentSlide = 0;
 
