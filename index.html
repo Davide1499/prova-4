@@ -244,6 +244,9 @@ const camionData = {
     { label: "2 Lance da 70" },
     { label: "2 Lance da 45" },
     { label: "Tanica di schiumogeno" },
+    { "label": "3 Maschere x autoprotettore" },
+    { "label": "3 Autoprotettori" },
+    { "label": "Lancia x schiuma bassa esp." },
     { label: "2 Tubi pesca schiumogeno" }
   ],
   "Anteriore Sinistro": [
@@ -304,13 +307,9 @@ const camionData = {
     { label: "Motoventilatore" }
   ],
   "Tetto": [
-    { "label": "Lancia x schiuma bassa esp." },
     { "label": "Scala italiana" },
-    { "label": "3 Autoprotettori" },
     { "label": "Scala a ganci" },
-    { "label": "Bombola" },
     { "label": "Mezzo marinaio" },
-    { "label": "3 Maschere x autoprotettore" },
     { "label": "Forcone" },
     { "label": "Fioretto dielettrico" }
   ]
@@ -676,7 +675,7 @@ function createHotspotButtons() {
       {name:"Centrale Sinistro", x:389.5, y:587, width:77,height:100},
       {name:"Posteriore Sinistro", x:475.8, y:605, width:83, height:137},
       {name:"Vano Pompa", x:301, y:1000, width:110, height:163},
-      {name:"Tetto", x:300, y:1800, width:110, height:163}
+      {name:"Tetto", x:420, y:1807, width:250, height:215}
   ];
 
   rightDiv.querySelectorAll(".hotspot-btn").forEach(b => b.remove());
@@ -1047,17 +1046,6 @@ function exportPDF() {
 
   doc.save(fileName + ".pdf");
 }
-
-
-
-
-
-
-
-
-
-
-
 
 
 
