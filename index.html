@@ -618,11 +618,13 @@ noteIconWrapper.addEventListener("click", (e) => {
 });
 
 
-  document.addEventListener("click", (e) => {
-    if (!noteContainer.contains(e.target)) {
-      noteInput.style.display = "none";
-    }
-  });
+document.addEventListener('click', (e) => {
+  if (!e.target.closest('.compartimento') && !e.target.classList.contains('hotspot-btn')) {
+    document.querySelectorAll('.checklist').forEach(c => c.style.display = 'none');
+    document.querySelectorAll('.hotspot-btn').forEach(b => b.classList.remove('blinking'));
+  }
+});
+
 
   noteInput.addEventListener("input", () => {
     const hasNote = noteInput.value.trim() !== "";
