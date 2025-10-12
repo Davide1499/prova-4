@@ -125,23 +125,24 @@ label { margin-right:10px; cursor:pointer; }
     <svg id="camionSVG" viewBox="0 0 600 2000">
       <image href="https://davide1499.github.io/prova-5/camion.jpg" x="0" y="0" width="600" height="400"/>
       <rect x="0" y="0" width="600" height="30" fill="#fff"/>
-      <text x="300" y="22" text-anchor="middle" font-size="20" font-weight="bold" fill="#000">LATO DESTRO</text>
-        
+      <text x="300" y="22" text-anchor="middle" font-size="20" font-weight="bold" fill="#000">Anteriore Destro</text>
+
       <image href="https://davide1499.github.io/prova-5/ciao.jpg" x="0" y="400" width="600" height="400"/>
       <rect x="0" y="400" width="600" height="30" fill="#fff"/>
-      <text x="300" y="422" text-anchor="middle" font-size="20" font-weight="bold" fill="#000">LATO SINISTRO</text>
-        
+      <text x="300" y="422" text-anchor="middle" font-size="20" font-weight="bold" fill="#000">Anteriore Sinistro</text>
+
       <image href="https://davide1499.github.io/prova-5/vanopompa1.jpg" x="0" y="800" width="600" height="400"/>
       <rect x="0" y="800" width="600" height="30" fill="#fff"/>
-      <text x="300" y="822" text-anchor="middle" font-size="20" font-weight="bold" fill="#000">VANO POMPA</text>
+      <text x="300" y="822" text-anchor="middle" font-size="20" font-weight="bold" fill="#000">Vano Pompa</text>
 
-      <image href="https://davide1499.github.io/prova-5/cabina.jpg" x="0" y="1200" width="600" height="400"/>
+      <image href="https://davide1499.github.io/prova-5/cabina3.jpg" x="0" y="1215" width="600" height="400"/>
       <rect x="0" y="1200" width="600" height="30" fill="#fff"/>
-      <text x="300" y="1222" text-anchor="middle" font-size="20" font-weight="bold" fill="#000">CABINA</text>
+      <text x="300" y="1222" text-anchor="middle" font-size="20" font-weight="bold" fill="#000">Cabina</text>
 
+      <image href="https://davide1499.github.io/prova-5/vanopompa1.jpg" x="0" y="1600" width="600" height="400"/>
       <image href="https://davide1499.github.io/prova-5/tetto.jpg" x="0" y="1600" width="600" height="400"/>
       <rect x="0" y="1600" width="600" height="30" fill="#fff"/>
-      <text x="300" y="1622" text-anchor="middle" font-size="20" font-weight="bold" fill="#000">TETTO</text>
+      <text x="300" y="1622" text-anchor="middle" font-size="20" font-weight="bold" fill="#000">Tetto</text>
     </svg>
   </div>
 
@@ -173,9 +174,9 @@ label { margin-right:10px; cursor:pointer; }
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script>
-  
-  
-  
+
+
+
 const camionData = {
 
   "Cabina": [
@@ -244,9 +245,6 @@ const camionData = {
     { label: "2 Lance da 70" },
     { label: "2 Lance da 45" },
     { label: "Tanica di schiumogeno" },
-    { "label": "3 Maschere x autoprotettore" },
-    { "label": "3 Autoprotettori" },
-    { "label": "Lancia x schiuma bassa esp." },
     { label: "2 Tubi pesca schiumogeno" }
   ],
   "Anteriore Sinistro": [
@@ -287,7 +285,7 @@ const camionData = {
   }
 },
 
-  
+
   "Posteriore Sinistro": [
     { label: "2 Scappelli" },
     { label: "Divaricatore" },
@@ -307,9 +305,13 @@ const camionData = {
     { label: "Motoventilatore" }
   ],
   "Tetto": [
+    { "label": "Lancia x schiuma bassa esp." },
     { "label": "Scala italiana" },
+    { "label": "3 Autoprotettori" },
     { "label": "Scala a ganci" },
+    { "label": "Bombola" },
     { "label": "Mezzo marinaio" },
+    { "label": "3 Maschere x autoprotettore" },
     { "label": "Forcone" },
     { "label": "Fioretto dielettrico" }
   ]
@@ -488,7 +490,7 @@ camionDiv.appendChild(div);
 
   });
 }
-  
+
 function createChecklistRow(itemData, compName, title) {
   const row = document.createElement("div");
   row.className = "checklist-item";
@@ -618,13 +620,11 @@ noteIconWrapper.addEventListener("click", (e) => {
 });
 
 
-document.addEventListener('click', (e) => {
-  if (!e.target.closest('.compartimento') && !e.target.classList.contains('hotspot-btn')) {
-    document.querySelectorAll('.checklist').forEach(c => c.style.display = 'none');
-    document.querySelectorAll('.hotspot-btn').forEach(b => b.classList.remove('blinking'));
-  }
-});
-
+  document.addEventListener("click", (e) => {
+    if (!noteContainer.contains(e.target)) {
+      noteInput.style.display = "none";
+    }
+  });
 
   noteInput.addEventListener("input", () => {
     const hasNote = noteInput.value.trim() !== "";
@@ -669,7 +669,7 @@ function createHotspotButtons() {
   const svg = document.getElementById("camionSVG");
 
   const hotspots = [
-      {name:"Cabina", x:300, y:1340, width:180, height:73},
+      {name:"Cabina", x:300, y:1330, width:250, height:85},
       {name:"Anteriore Destro", x:301.5, y:210, width:104, height:146},
       {name:"Centrale Destro", x:205, y:187, width:79, height:100},
       {name:"Posteriore Destro", x:116.2, y:205, width:83.5, height:135},
@@ -677,7 +677,7 @@ function createHotspotButtons() {
       {name:"Centrale Sinistro", x:389.5, y:587, width:77,height:100},
       {name:"Posteriore Sinistro", x:475.8, y:605, width:83, height:137},
       {name:"Vano Pompa", x:301, y:1000, width:110, height:163},
-      {name:"Tetto", x:420, y:1807, width:250, height:215}
+      {name:"Tetto", x:420, y:1809, width:250, height:213}
   ];
 
   rightDiv.querySelectorAll(".hotspot-btn").forEach(b => b.remove());
@@ -698,41 +698,34 @@ function createHotspotButtons() {
     btn.style.left = h.x * scaleX + "px";
     btn.style.top = h.y * scaleY + "px";
 
-   btn.addEventListener('click', () => {
+  btn.addEventListener('click', () => {
+  // Trova il titolo del compartimento corrispondente
   const header = Array.from(document.querySelectorAll('.compartimento h3'))
                       .find(hd => hd.textContent === h.name);
 
   if (header) {
-    const checklistDiv = header.nextElementSibling;
-    const isOpen = checklistDiv.style.display === 'block';
+    const checklist = header.nextElementSibling;
+    const isOpen = checklist.style.display === 'block';
 
     // Nasconde tutte le checklist
     document.querySelectorAll('.checklist').forEach(c => c.style.display = 'none');
 
-    // Rimuove effetto lampeggiante da tutti i bottoni
-    document.querySelectorAll('.hotspot-btn').forEach(b => b.classList.remove('blinking'));
+    // Se quella cliccata era già aperta → richiude tutto
+    if (isOpen) return;
 
-    // Se era già aperta, la richiude e basta
-    if (isOpen) {
-      checklistDiv.style.display = 'none';
-      return;
-    }
+    // Altrimenti apre la checklist corrispondente
+    checklist.style.display = 'block';
+    header.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
-    // Altrimenti la apre normalmente
-    checklistDiv.style.display = 'block';
-    checklistDiv.classList.remove('focus-blink');
-    void checklistDiv.offsetWidth; // forza il reflow per riattivare l'animazione
-    checklistDiv.classList.add('focus-blink');
-    checklistDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
-
-    // Evidenzia il bottone attivo
-    btn.classList.add('blinking');
+    // Evidenzia temporaneamente il titolo
+    header.classList.add('focus-selected');
+    setTimeout(() => header.classList.remove('focus-selected'), 1000);
   }
 });
 
-rightDiv.appendChild(btn);
-});
 
+    rightDiv.appendChild(btn);
+  });
 }
 // --- Modale foto ---
 const modalFoto = document.getElementById("modalFoto");
@@ -754,7 +747,7 @@ const lati = {
   "Posteriore": ["Vano Pompa"],
   "Cabina": ["Cabina"],
   "Tetto": ["Vano Pompa"]
- 
+
 };
 
 function updateCompartmentStatus(compName){
@@ -1070,6 +1063,17 @@ function exportPDF() {
 
 
 
+
+
+
+
+
+
+
+
+
+
+
 document.getElementById("exportPDF").addEventListener("click", exportPDF);
 
 // --- Scheda Tecnica ---
@@ -1082,7 +1086,7 @@ const nextSlide = document.getElementById("nextSlide");
 
 const immaginiCamion = [
   "https://davide1499.github.io/prova-5/camion.jpg",
-  "https://davide1499.github.io/prova-5/cabina.jpg",
+  "https://davide1499.github.io/prova-5/cabina3.jpg",
   "https://davide1499.github.io/prova-5/vanopompa1.jpg"
 ];
 let currentSlide = 0;
@@ -1216,7 +1220,7 @@ function scrollToItem(itemName, compName) {
 
 createCamionUI();
 createHotspotButtons();
-  
+
   // Funzione che verifica se ci sono modifiche nella checklist
 function checkForChanges() {
   const items = document.querySelectorAll(".checklist-item");
